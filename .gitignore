@@ -1,0 +1,24 @@
+.stack-work/
+*~
+
+# from cabal repo
+.cabal-sandbox/
+cabal.sandbox.config
+cabal.project.local
+.ghc.environment.*
+cabal-dev/
+.hpc/
+*.hi
+*.o
+*.p_hi
+*.prof
+*.tix
+dist
+dist-*
+register.sh
+./cabal.config
+cabal-tests.log
+
+tags
+TAGS
+.vim

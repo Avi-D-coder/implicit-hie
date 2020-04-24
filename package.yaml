@@ -1,0 +1,50 @@
+name:                implicit-hie
+version:             0.1.0.0
+github:              "Avi-D-coder/implicit-hie"
+license:             BSD3
+author:              "Avi Dessauer"
+maintainer:          "avi.the.coder@gmail.com"
+copyright:           "2020"
+
+extra-source-files:
+- README.md
+- ChangeLog.md
+
+# Metadata used when publishing your package
+# synopsis:            Short description of your package
+# category:            Web
+
+# To avoid duplicated efforts in documentation and dealing with the
+# complications of embedding Haddock markup inside cabal files, it is
+# common to point users to the README.md file.
+description:         Please see the README on GitHub at <https://github.com/Avi-D-coder/implicit-hie#readme>
+
+dependencies:
+- base >= 4.7 && < 5
+- bytestring
+- attoparsec
+
+library:
+  source-dirs: src
+
+executables:
+  implicit-hie-exe:
+    main:                Main.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - implicit-hie
+
+tests:
+  implicit-hie-test:
+    main:                Spec.hs
+    source-dirs:         test
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - implicit-hie
