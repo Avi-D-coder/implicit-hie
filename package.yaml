@@ -21,8 +21,21 @@ description:         Please see the README on GitHub at <https://github.com/Avi-
 
 dependencies:
 - base >= 4.7 && < 5
-- bytestring
+- text
 - attoparsec
+
+ghc-options:
+- -O2
+- -flate-specialise
+- -fexpose-all-unfoldings
+- -fspecialize-aggressively
+- -Wall
+- -Wincomplete-record-updates
+- -Wincomplete-uni-patterns
+- -fno-warn-unused-imports
+- -fno-warn-unused-binds
+- -fno-warn-name-shadowing
+- -fwarn-redundant-constraints
 
 library:
   source-dirs: src
@@ -48,3 +61,5 @@ tests:
     - -with-rtsopts=-N
     dependencies:
     - implicit-hie
+    - hspec
+    - hspec-attoparsec

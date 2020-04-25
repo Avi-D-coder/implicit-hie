@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: f57f4d37f9161e27fe4ec32a5c9266e5465c1db369c57ea558de2ad04ca74fd8
+-- hash: f408920e6437a2881526a6b665a159c8770af5eca3ebc6e444ff7b0f4853e4ed
 
 name:           implicit-hie
 version:        0.1.0.0
@@ -32,10 +32,11 @@ library
       Paths_implicit_hie
   hs-source-dirs:
       src
+  ghc-options: -O2 -flate-specialise -fexpose-all-unfoldings -fspecialize-aggressively -Wall -Wincomplete-record-updates -Wincomplete-uni-patterns -fno-warn-unused-imports -fno-warn-unused-binds -fno-warn-name-shadowing -fwarn-redundant-constraints
   build-depends:
       attoparsec
     , base >=4.7 && <5
-    , bytestring
+    , text
   default-language: Haskell2010
 
 executable implicit-hie-exe
@@ -44,12 +45,12 @@ executable implicit-hie-exe
       Paths_implicit_hie
   hs-source-dirs:
       app
-  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  ghc-options: -O2 -flate-specialise -fexpose-all-unfoldings -fspecialize-aggressively -Wall -Wincomplete-record-updates -Wincomplete-uni-patterns -fno-warn-unused-imports -fno-warn-unused-binds -fno-warn-name-shadowing -fwarn-redundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       attoparsec
     , base >=4.7 && <5
-    , bytestring
     , implicit-hie
+    , text
   default-language: Haskell2010
 
 test-suite implicit-hie-test
@@ -59,10 +60,12 @@ test-suite implicit-hie-test
       Paths_implicit_hie
   hs-source-dirs:
       test
-  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  ghc-options: -O2 -flate-specialise -fexpose-all-unfoldings -fspecialize-aggressively -Wall -Wincomplete-record-updates -Wincomplete-uni-patterns -fno-warn-unused-imports -fno-warn-unused-binds -fno-warn-name-shadowing -fwarn-redundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       attoparsec
     , base >=4.7 && <5
-    , bytestring
+    , hspec
+    , hspec-attoparsec
     , implicit-hie
+    , text
   default-language: Haskell2010
