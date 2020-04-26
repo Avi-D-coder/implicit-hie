@@ -25,9 +25,9 @@ dependencies:
 - attoparsec
 
 ghc-options:
-- -O2
-- -flate-specialise
-- -fexpose-all-unfoldings
+# - -O2
+# - -flate-specialise
+# - -fexpose-all-unfoldings
 - -fspecialize-aggressively
 - -Wall
 - -Wincomplete-record-updates

@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: f408920e6437a2881526a6b665a159c8770af5eca3ebc6e444ff7b0f4853e4ed
+-- hash: 43f070b60e4bc798c52d79691e2dcdd543171eeee553cd2f28579bf9e3b6e10a
 
 name:           implicit-hie
 version:        0.1.0.0
@@ -32,7 +32,7 @@ library
       Paths_implicit_hie
   hs-source-dirs:
       src
-  ghc-options: -O2 -flate-specialise -fexpose-all-unfoldings -fspecialize-aggressively -Wall -Wincomplete-record-updates -Wincomplete-uni-patterns -fno-warn-unused-imports -fno-warn-unused-binds -fno-warn-name-shadowing -fwarn-redundant-constraints
+  ghc-options: -fspecialize-aggressively -Wall -Wincomplete-record-updates -Wincomplete-uni-patterns -fno-warn-unused-imports -fno-warn-unused-binds -fno-warn-name-shadowing -fwarn-redundant-constraints
   build-depends:
       attoparsec
     , base >=4.7 && <5
@@ -45,7 +45,7 @@ executable implicit-hie-exe
       Paths_implicit_hie
   hs-source-dirs:
       app
-  ghc-options: -O2 -flate-specialise -fexpose-all-unfoldings -fspecialize-aggressively -Wall -Wincomplete-record-updates -Wincomplete-uni-patterns -fno-warn-unused-imports -fno-warn-unused-binds -fno-warn-name-shadowing -fwarn-redundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  ghc-options: -fspecialize-aggressively -Wall -Wincomplete-record-updates -Wincomplete-uni-patterns -fno-warn-unused-imports -fno-warn-unused-binds -fno-warn-name-shadowing -fwarn-redundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       attoparsec
     , base >=4.7 && <5
@@ -60,7 +60,7 @@ test-suite implicit-hie-test
       Paths_implicit_hie
   hs-source-dirs:
       test
-  ghc-options: -O2 -flate-specialise -fexpose-all-unfoldings -fspecialize-aggressively -Wall -Wincomplete-record-updates -Wincomplete-uni-patterns -fno-warn-unused-imports -fno-warn-unused-binds -fno-warn-name-shadowing -fwarn-redundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  ghc-options: -fspecialize-aggressively -Wall -Wincomplete-record-updates -Wincomplete-uni-patterns -fno-warn-unused-imports -fno-warn-unused-binds -fno-warn-name-shadowing -fwarn-redundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       attoparsec
     , base >=4.7 && <5

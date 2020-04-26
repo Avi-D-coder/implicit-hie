@@ -8,6 +8,7 @@ import Data.Attoparsec.Text
 import Data.Char (isSpace)
 import Data.Text (Text)
 import qualified Data.Text as T
+import Debug.Trace
 
 type Name = Text
 
@@ -47,13 +48,15 @@ parseComponentName = do
   takeWhile1 (not . isSpace)
 
 parseNamed :: Indent -> Text -> (Name -> Path -> Component) -> Parser Component
-parseNamed i compType compCon = do
-  indent i
-  _ <- asciiCI compType
-  _ <- skipSpace
-  n <- parseComponentName
-  skipToNextLine
-  compCon n <$> parsePath i
+parseNamed i compType compCon =
+  do
+    indent i
+    _ <- asciiCI compType <?> "asciiCI " <> T.unpack compType
+    _ <- skipSpace <?> "skipSpace"
+    n <- parseComponentName <?> "N"
+    skipToNextLine
+    compCon n <$> parsePath i
+    <?> T.unpack ("parseNamed " <> compType)
 
 skipToNextLine :: Parser ()
 skipToNextLine = skipWhile (not . isEndOfLine) >> endOfLine
@@ -70,15 +73,17 @@ parsePath i =
       skipToNextLine
       skipMany $ indent i >> skipToNextLine
       pure p
+      <?> "hs-source-dirs"
   )
     <|> ( do
             indent i
             skipToNextLine
             parsePath i
+            <?> "skip line"
         )
-    <|> pure "."
+    <|> (pure "." <?> "not found") <?> "parsePath"
 
 -- | Skip at least n spaces
 indent :: Indent -> Parser ()
-indent 0 = skipMany space
-indent i = space >> indent (i - 1)
+indent 0 = skipMany space <?> "indent 0"
+indent i = space >> indent (i - 1) <?> "indent 0"
