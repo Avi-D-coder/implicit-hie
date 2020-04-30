@@ -8,7 +8,6 @@ import Data.Attoparsec.Text
 import Data.Char (isSpace)
 import Data.Text (Text)
 import qualified Data.Text as T
-import Debug.Trace
 
 type Name = Text
 
@@ -22,13 +21,12 @@ data Component = Lib Path | Exe Name Path | Test Name Path
 parseComponents :: Parser [Component]
 parseComponents =
   ( do
-      traceM "do"
       h <- parseComponent 0
       t <- parseComponents
       pure $ h : t
   )
-    <|> (traceM "skip" >> skipToNextLine >> parseComponents)
-    <|> (traceM "pure" >> pure [])
+    <|> (skipToNextLine >> parseComponents)
+    <|> pure []
 
 parseComponent :: Indent -> Parser Component
 parseComponent i =
