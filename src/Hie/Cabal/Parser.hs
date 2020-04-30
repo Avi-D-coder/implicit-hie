@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Lib where
+module Hie.Cabal.Parser where
 
 import Control.Applicative
 import Control.Monad

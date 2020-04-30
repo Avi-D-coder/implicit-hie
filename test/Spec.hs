@@ -2,7 +2,7 @@
 
 import qualified Data.Text as T
 import Data.Text (Text)
-import Lib
+import Hie.Cabal.Parser
 import Test.Hspec
 import Test.Hspec.Attoparsec
 
