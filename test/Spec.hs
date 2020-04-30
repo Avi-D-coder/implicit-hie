@@ -23,6 +23,19 @@ spec = do
     $ it "successfully parses library section"
     $ libSection ~> parseLib 0
       `shouldParse` Lib "src"
+  describe "Should Succeed"
+    $ it "successfully parses library section"
+    $ (exeSection <> testSection <> libSection) ~> parseComponents
+      `shouldParse` [ Exe "implicit-hie-exe" "app",
+                      Test "implicit-hie-test" "test",
+                      Lib "src"
+                    ]
+  describe "Should Succeed"
+    $ it
+      "successfully parses library section"
+    $ let r = "test\n"
+       in (libSection <> r) ~?> parseLib 0
+            `leavesUnconsumed` r
 
 exeSection :: Text
 exeSection =

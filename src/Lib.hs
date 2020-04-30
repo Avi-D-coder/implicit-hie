@@ -22,12 +22,13 @@ data Component = Lib Path | Exe Name Path | Test Name Path
 parseComponents :: Parser [Component]
 parseComponents =
   ( do
+      traceM "do"
       h <- parseComponent 0
       t <- parseComponents
       pure $ h : t
   )
-    <|> (skipToNextLine >> parseComponents)
-    <|> (endOfInput >> pure [])
+    <|> (traceM "skip" >> skipToNextLine >> parseComponents)
+    <|> (traceM "pure" >> pure [])
 
 parseComponent :: Indent -> Parser Component
 parseComponent i =
@@ -40,7 +41,7 @@ parseLib i =
   indent i
     >> asciiCI "library"
     >> skipToNextLine
-    >> Lib <$> parsePath i
+    >> Lib <$> parsePath (i + 1)
 
 parseComponentName :: Parser Name
 parseComponentName = do
@@ -55,11 +56,21 @@ parseNamed i compType compCon =
     _ <- skipSpace <?> "skipSpace"
     n <- parseComponentName <?> "N"
     skipToNextLine
-    compCon n <$> parsePath i
+    compCon n <$> parsePath (i + 1)
     <?> T.unpack ("parseNamed " <> compType)
 
 skipToNextLine :: Parser ()
 skipToNextLine = skipWhile (not . isEndOfLine) >> endOfLine
+
+skipBlock :: Indent -> Parser ()
+skipBlock i =
+  skipMany $
+    (indent i >> skipToNextLine)
+      <|> (skipMany tabOrSpace >> endOfLine)
+      <|> (skipSpace >> "--" >> skipToNextLine)
+
+tabOrSpace :: Parser Char
+tabOrSpace = char ' ' <|> char '\t'
 
 parsePath :: Indent -> Parser Path
 parsePath i =
@@ -71,7 +82,7 @@ parsePath i =
       -- FIXME paths can be in quotes
       p <- parseComponentName
       skipToNextLine
-      skipMany $ indent i >> skipToNextLine
+      skipBlock i
       pure p
       <?> "hs-source-dirs"
   )
@@ -85,5 +96,5 @@ parsePath i =
 
 -- | Skip at least n spaces
 indent :: Indent -> Parser ()
-indent 0 = skipMany space <?> "indent 0"
-indent i = space >> indent (i - 1) <?> "indent 0"
+indent 0 = skipMany tabOrSpace <?> "indent 0"
+indent i = tabOrSpace >> indent (i - 1) <?> "indent 0"
