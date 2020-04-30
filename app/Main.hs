@@ -9,8 +9,6 @@ main :: IO ()
 main = do
   args <- getArgs
   file <- T.readFile $ head args
-  case parseOnly parseComponents file of
-    Right r -> do
-      putStrLn $ show (length r) <> " components"
-      mapM_ print r
+  case parseOnly parseSec file of
+    Right r -> print r
     _ -> error "Could not parse *.cabal file"

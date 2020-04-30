@@ -15,18 +15,29 @@ type Path = Text
 
 type Indent = Int
 
+data Package = Package Name [Component]
+  deriving (Show, Eq, Ord)
+
 data Component = Lib Path | Exe Name Path | Test Name Path
   deriving (Show, Eq, Ord)
 
-parseComponents :: Parser [Component]
-parseComponents =
+parseName :: Parser Text
+parseName = "name" >> skipSpace >> char ':' >> parseString
+
+parseSec :: Parser Package
+parseSec =
   ( do
-      h <- parseComponent 0
-      t <- parseComponents
-      pure $ h : t
+      n <- parseName
+      (Package _ t) <- parseSec
+      pure $ Package n t
   )
-    <|> (skipToNextLine >> parseComponents)
-    <|> pure []
+    <|> ( do
+            h <- parseComponent 0
+            (Package n t) <- parseSec
+            pure $ Package n (h : t)
+        )
+    <|> (skipToNextLine >> parseSec)
+    <|> pure (Package "" [])
 
 parseComponent :: Indent -> Parser Component
 parseComponent i =
@@ -41,10 +52,15 @@ parseLib i =
     >> skipToNextLine
     >> Lib <$> parsePath (i + 1)
 
-parseComponentName :: Parser Name
-parseComponentName = do
+parseQuoted :: Parser Text
+parseQuoted = do
+  q <- char '"' <|> char '\''
+  takeTill (== q)
+
+parseString :: Parser Name
+parseString = do
   skipSpace
-  takeWhile1 (not . isSpace)
+  parseQuoted <|> takeWhile1 (not . isSpace)
 
 parseNamed :: Indent -> Text -> (Name -> Path -> Component) -> Parser Component
 parseNamed i compType compCon =
@@ -52,7 +68,7 @@ parseNamed i compType compCon =
     indent i
     _ <- asciiCI compType <?> "asciiCI " <> T.unpack compType
     _ <- skipSpace <?> "skipSpace"
-    n <- parseComponentName <?> "N"
+    n <- parseString <?> "N"
     skipToNextLine
     compCon n <$> parsePath (i + 1)
     <?> T.unpack ("parseNamed " <> compType)
@@ -78,7 +94,7 @@ parsePath i =
       skipSpace
       _ <- char ':'
       -- FIXME paths can be in quotes
-      p <- parseComponentName
+      p <- parseString
       skipToNextLine
       skipBlock i
       pure p

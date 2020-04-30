@@ -25,11 +25,14 @@ spec = do
       `shouldParse` Lib "src"
   describe "Should Succeed"
     $ it "successfully parses library section"
-    $ (exeSection <> testSection <> libSection) ~> parseComponents
-      `shouldParse` [ Exe "implicit-hie-exe" "app",
-                      Test "implicit-hie-test" "test",
-                      Lib "src"
-                    ]
+    $ ("name: implicit-hie\n" <> exeSection <> testSection <> libSection)
+      ~> parseSec
+        `shouldParse` Package
+          "implicit-hie"
+          [ Exe "implicit-hie-exe" "app",
+            Test "implicit-hie-test" "test",
+            Lib "src"
+          ]
   describe "Should Succeed"
     $ it
       "successfully parses library section"
