@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: bc348cef928e75313b689d7626632633e11398ad278358aea4933e83a9564985
+-- hash: f941332727b491b78a5ecc8465f43d3597766e4d3363a1d76d459e4a84515b5f
 
 name:           implicit-hie
 version:        0.1.0.0
@@ -51,6 +51,8 @@ executable implicit-hie-exe
   build-depends:
       attoparsec
     , base >=4.7 && <5
+    , directory
+    , filepath
     , implicit-hie
     , text
     , yaml

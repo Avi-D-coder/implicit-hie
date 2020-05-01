@@ -29,8 +29,8 @@ cabalComponent _ (Test p cn) = component p $ "test:" <> cn
 
 stackComponent :: Name -> Component -> T.Text
 stackComponent n (Lib p) = component p $ n <> ":lib"
-stackComponent n (Exe p cn) = component p $ n <> ":exe:" <> cn
-stackComponent n (Test p cn) = component p $ n <> ":test:" <> cn
+stackComponent n (Exe cn p) = component p $ n <> ":exe:" <> cn
+stackComponent n (Test cn p) = component p $ n <> ":test:" <> cn
 
 component :: T.Text -> T.Text -> T.Text
 component p c =

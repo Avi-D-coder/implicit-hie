@@ -1,8 +1,10 @@
 {-# LANGUAGE OverloadedStrings #-}
 
+import Data.Attoparsec.Text
 import qualified Data.Text as T
 import Data.Text (Text)
 import Hie.Cabal.Parser
+import Hie.Yaml
 import Test.Hspec
 import Test.Hspec.Attoparsec
 
@@ -25,20 +27,25 @@ spec = do
       `shouldParse` Lib "src"
   describe "Should Succeed"
     $ it "successfully parses library section"
-    $ ("name: implicit-hie\n" <> exeSection <> testSection <> libSection)
-      ~> parseSec
-        `shouldParse` Package
-          "implicit-hie"
-          [ Exe "implicit-hie-exe" "app",
-            Test "implicit-hie-test" "test",
-            Lib "src"
-          ]
+    $ fullFile ~> parseSec
+      `shouldParse` Package
+        "implicit-hie"
+        [ Lib "src",
+          Exe "implicit-hie-exe" "app",
+          Test "implicit-hie-test" "test"
+        ]
   describe "Should Succeed"
     $ it
       "successfully parses library section"
     $ let r = "test\n"
        in (libSection <> r) ~?> parseLib 0
             `leavesUnconsumed` r
+  describe "Should Succeed"
+    $ it "successfully generates stack hie.yaml"
+    $ (stackHieYaml <$> parseOnly parseSec fullFile) `shouldBe` Right stackHie
+
+fullFile :: Text
+fullFile = "name: implicit-hie\n" <> libSection <> exeSection <> testSection
 
 exeSection :: Text
 exeSection =
@@ -84,4 +91,16 @@ libSection =
   \  , base >=4.7 && <5\n\
   \  , text\n\
   \  default-language: Haskell2010\n\
+  \"
+
+stackHie :: Text
+stackHie =
+  "cradle:\n\
+  \  stack:\n\
+  \    - path: \"src\"\n\
+  \      component: \"implicit-hie:lib\"\n\
+  \    - path: \"app\"\n\
+  \      component: \"implicit-hie:exe:implicit-hie-exe\"\n\
+  \    - path: \"test\"\n\
+  \      component: \"implicit-hie:test:implicit-hie-test\"\n\
   \"

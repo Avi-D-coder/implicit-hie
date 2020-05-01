@@ -1,8 +1,8 @@
 cradle:
   stack:
-      - path: ./src
-        component: "implicit-hie:lib"
-      - path: ./app
-        component: "implicit-hie:exe:implicit-hie-exe"
-      - path: ./test
-        component: "implicit-hie:test:implicit-hie-test"
+    - path: "src"
+      component: "implicit-hie:lib"
+    - path: "app"
+      component: "implicit-hie:exe:implicit-hie-exe"
+    - path: "test"
+      component: "implicit-hie:test:implicit-hie-test"

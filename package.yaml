@@ -51,6 +51,8 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - implicit-hie
+    - directory
+    - filepath
 
 tests:
   implicit-hie-test:
