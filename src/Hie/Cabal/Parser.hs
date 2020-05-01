@@ -24,19 +24,19 @@ data Component = Lib Path | Exe Name Path | Test Name Path
 parseName :: Parser Text
 parseName = "name" >> skipSpace >> char ':' >> parseString
 
-parseSec :: Parser Package
-parseSec =
+parsePackage :: Parser Package
+parsePackage =
   ( do
       n <- parseName
-      (Package _ t) <- parseSec
+      (Package _ t) <- parsePackage
       pure $ Package n t
   )
     <|> ( do
             h <- parseComponent 0
-            (Package n t) <- parseSec
+            (Package n t) <- parsePackage
             pure $ Package n (h : t)
         )
-    <|> (skipToNextLine >> parseSec)
+    <|> (skipToNextLine >> parsePackage)
     <|> pure (Package "" [])
 
 parseComponent :: Indent -> Parser Component

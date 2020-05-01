@@ -26,23 +26,23 @@ spec = do
     $ libSection ~> parseLib 0
       `shouldParse` Lib "src"
   describe "Should Succeed"
-    $ it "successfully parses library section"
-    $ fullFile ~> parseSec
-      `shouldParse` Package
-        "implicit-hie"
-        [ Lib "src",
+    $ it "successfully parses package"
+    $ fullFile ~> parsePackage 
+      `shouldParse` Package 
+        "implicit-hie" 
+        [ Lib "src", 
           Exe "implicit-hie-exe" "app",
           Test "implicit-hie-test" "test"
-        ]
-  describe "Should Succeed"
-    $ it
-      "successfully parses library section"
-    $ let r = "test\n"
+        ] 
+  describe "Should Succeed" 
+    $ it 
+      "skips to end of block section"
+    $ let r = "test\n" 
        in (libSection <> r) ~?> parseLib 0
             `leavesUnconsumed` r
   describe "Should Succeed"
     $ it "successfully generates stack hie.yaml"
-    $ (stackHieYaml <$> parseOnly parseSec fullFile) `shouldBe` Right stackHie
+    $ (stackHieYaml <$> parseOnly parsePackage fullFile) `shouldBe` Right stackHie
 
 fullFile :: Text
 fullFile = "name: implicit-hie\n" <> libSection <> exeSection <> testSection

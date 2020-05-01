@@ -21,6 +21,6 @@ main = do
             | otherwise -> stackHieYaml
   when (null path) $ error "No .cabal file found!\n You may need to run stack build."
   file <- T.readFile $ head path
-  case parseOnly parseSec file of
+  case parseOnly parsePackage file of
     Right r -> T.writeFile "hie.yaml" $ sOrC r
     _ -> error "Could not parse *.cabal file"
