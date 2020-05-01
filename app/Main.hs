@@ -18,7 +18,8 @@ main = do
       sOrC =
         if  | any ((".stack-work" ==) . takeFileName) files -> stackHieYaml
             | any (("dist-newstyle" ==) . takeFileName) files -> cabalHieYaml
-            | otherwise -> stackHieYaml
+            | any (("stack.yaml" ==) . takeFileName) files -> stackHieYaml
+            | otherwise -> cabalHieYaml
   when (null path) $ error "No .cabal file found!\n You may need to run stack build."
   file <- T.readFile $ head path
   case parseOnly parsePackage file of
