@@ -4,11 +4,11 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: f941332727b491b78a5ecc8465f43d3597766e4d3363a1d76d459e4a84515b5f
+-- hash: ee9bceb3ed6e6ee053acc1dc9dde3033fed8e9f565a8c8bbdfa52f9be9c507aa
 
 name:           implicit-hie
 version:        0.1.0.0
-description:    Please see the README on GitHub at <https://github.com/Avi-D-coder/implicit-hie#readme>
+description:    Auto generate a stack or cabal multi component hie.yaml file
 homepage:       https://github.com/Avi-D-coder/implicit-hie#readme
 bug-reports:    https://github.com/Avi-D-coder/implicit-hie/issues
 author:         Avi Dessauer
@@ -33,7 +33,7 @@ library
       Paths_implicit_hie
   hs-source-dirs:
       src
-  ghc-options: -fspecialize-aggressively -Wall -Wincomplete-record-updates -Wincomplete-uni-patterns -fno-warn-unused-imports -fno-warn-unused-binds -fno-warn-name-shadowing -fwarn-redundant-constraints
+  ghc-options: -O2 -flate-specialise -fexpose-all-unfoldings -fspecialize-aggressively -Wall -Wincomplete-record-updates -Wincomplete-uni-patterns -fno-warn-unused-imports -fno-warn-unused-binds -fno-warn-name-shadowing -fwarn-redundant-constraints
   build-depends:
       attoparsec
     , base >=4.7 && <5
@@ -41,13 +41,13 @@ library
     , yaml
   default-language: Haskell2010
 
-executable implicit-hie-exe
+executable gen-hie
   main-is: Main.hs
   other-modules:
       Paths_implicit_hie
   hs-source-dirs:
       app
-  ghc-options: -fspecialize-aggressively -Wall -Wincomplete-record-updates -Wincomplete-uni-patterns -fno-warn-unused-imports -fno-warn-unused-binds -fno-warn-name-shadowing -fwarn-redundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  ghc-options: -O2 -flate-specialise -fexpose-all-unfoldings -fspecialize-aggressively -Wall -Wincomplete-record-updates -Wincomplete-uni-patterns -fno-warn-unused-imports -fno-warn-unused-binds -fno-warn-name-shadowing -fwarn-redundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       attoparsec
     , base >=4.7 && <5
@@ -65,7 +65,7 @@ test-suite implicit-hie-test
       Paths_implicit_hie
   hs-source-dirs:
       test
-  ghc-options: -fspecialize-aggressively -Wall -Wincomplete-record-updates -Wincomplete-uni-patterns -fno-warn-unused-imports -fno-warn-unused-binds -fno-warn-name-shadowing -fwarn-redundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  ghc-options: -O2 -flate-specialise -fexpose-all-unfoldings -fspecialize-aggressively -Wall -Wincomplete-record-updates -Wincomplete-uni-patterns -fno-warn-unused-imports -fno-warn-unused-binds -fno-warn-name-shadowing -fwarn-redundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       attoparsec
     , base >=4.7 && <5

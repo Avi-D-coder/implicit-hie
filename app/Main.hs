@@ -22,5 +22,5 @@ main = do
   when (null path) $ error "No .cabal file found!\n You may need to run stack build."
   file <- T.readFile $ head path
   case parseOnly parsePackage file of
-    Right r -> T.writeFile "hie.yaml" $ sOrC r
+    Right r -> T.putStr $ sOrC r
     _ -> error "Could not parse *.cabal file"
