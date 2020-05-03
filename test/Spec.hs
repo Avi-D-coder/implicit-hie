@@ -15,8 +15,8 @@ spec :: Spec
 spec = do
   describe "Should Succeed"
     $ it "successfully parses executable section"
-    $ exeSection ~> parseNamed 0 "executable" Exe
-      `shouldParse` Exe "implicit-hie-exe" "app"
+    $ exeSection ~> parseExe 0
+      `shouldParse` Exe "implicit-hie-exe" "app/Main.hs"
   describe "Should Succeed"
     $ it "successfully parses test section"
     $ testSection ~> parseNamed 0 "test-suite" Test
@@ -27,17 +27,17 @@ spec = do
       `shouldParse` Lib "src"
   describe "Should Succeed"
     $ it "successfully parses package"
-    $ fullFile ~> parsePackage 
-      `shouldParse` Package 
-        "implicit-hie" 
-        [ Lib "src", 
-          Exe "implicit-hie-exe" "app",
+    $ fullFile ~> parsePackage
+      `shouldParse` Package
+        "implicit-hie"
+        [ Lib "src",
+          Exe "implicit-hie-exe" "app/Main.hs",
           Test "implicit-hie-test" "test"
-        ] 
-  describe "Should Succeed" 
-    $ it 
+        ]
+  describe "Should Succeed"
+    $ it
       "skips to end of block section"
-    $ let r = "test\n" 
+    $ let r = "test\n"
        in (libSection <> r) ~?> parseLib 0
             `leavesUnconsumed` r
   describe "Should Succeed"
@@ -99,7 +99,7 @@ stackHie =
   \  stack:\n\
   \    - path: \"src\"\n\
   \      component: \"implicit-hie:lib\"\n\
-  \    - path: \"app\"\n\
+  \    - path: \"app/Main.hs\"\n\
   \      component: \"implicit-hie:exe:implicit-hie-exe\"\n\
   \    - path: \"test\"\n\
   \      component: \"implicit-hie:test:implicit-hie-test\"\n\
