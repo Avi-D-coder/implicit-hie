@@ -17,18 +17,20 @@ main = do
   pwd <- getCurrentDirectory
   files <- listDirectory pwd
   cfs <- cabalFiles pwd
-  let sOrC =
-        if  | any (("dist-newstyle" ==) . takeFileName) files -> cabalHieYaml
-            | any ((".stack-work" ==) . takeFileName) files -> stackHieYaml
-            | any (("stack.yaml" ==) . takeFileName) files -> stackHieYaml
-            | otherwise -> cabalHieYaml
+  let cabal = (cabalHieYaml, "Cabal ")
+      stack = (stackHieYaml, "Stack ")
+      sOrC =
+        if  | any (("dist-newstyle" ==) . takeFileName) files -> cabal
+            | any ((".stack-work" ==) . takeFileName) files -> stack
+            | any (("stack.yaml" ==) . takeFileName) files -> stack
+            | otherwise -> cabal
       gen f = do
         f' <- T.readFile f
         case parseOnly parsePackage f' of
           Right r -> do
             let hiePath = fst (splitFileName f) </> "hie.yaml"
-            T.writeFile hiePath $ sOrC r
-            pure ("wrote " <> hiePath)
+            T.writeFile hiePath $ fst sOrC r
+            pure ("wrote " <> snd sOrC <> hiePath)
           _ -> pure $ "Could not parse " <> f
   when (null cfs) $ error $
     "No .cabal files found under"
