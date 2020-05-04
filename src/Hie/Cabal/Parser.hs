@@ -18,16 +18,13 @@ type Indent = Int
 data Package = Package Name [Component]
   deriving (Show, Eq, Ord)
 
-data Component = Lib Path | Exe Name Path | Test Name Path
+data Component = Lib Name Path | Exe Name Path | Test Name Path
   deriving (Show, Eq, Ord)
-
-parseName :: Parser Text
-parseName = "name" >> skipSpace >> char ':' >> parseString
 
 parsePackage :: Parser Package
 parsePackage =
   ( do
-      n <- parseName
+      n <- field 0 "name"
       (Package _ t) <- parsePackage
       pure $ Package n t
   )
@@ -39,6 +36,15 @@ parsePackage =
     <|> (skipToNextLine >> parsePackage)
     <|> pure (Package "" [])
 
+component :: Indent -> Text -> Parser Name
+component i t = do
+  indent i
+  _ <- asciiCI t
+  skipMany tabOrSpace
+  n <- parseString <|> pure ""
+  skipToNextLine
+  pure n
+
 parseComponent :: Indent -> Parser Component
 parseComponent i =
   parseLib i
@@ -46,11 +52,9 @@ parseComponent i =
     <|> parseNamed i "test-suite" Test
 
 parseLib :: Indent -> Parser Component
-parseLib i =
-  indent i
-    >> asciiCI "library"
-    >> skipToNextLine
-    >> Lib <$> extractPath (i + 1)
+parseLib i = do
+  n <- component i "library"
+  Lib n <$> extractPath (i + 1)
 
 parseQuoted :: Parser Text
 parseQuoted = do
@@ -58,20 +62,12 @@ parseQuoted = do
   takeTill (== q)
 
 parseString :: Parser Name
-parseString = do
-  skipSpace
-  parseQuoted <|> takeWhile1 (not . (\c -> isSpace c || c == ','))
+parseString = parseQuoted <|> takeWhile1 (not . (\c -> isSpace c || c == ','))
 
 parseExe :: Indent -> Parser Component
-parseExe i =
-  do
-    indent i
-    _ <- asciiCI "executable"
-    _ <- skipSpace
-    n <- parseString <?> "Exe Name"
-    skipToNextLine
-    Exe n <$> pathMain (i + 1) "." ""
-    <?> T.unpack "parseExe"
+parseExe i = do
+  n <- component i "executable"
+  Exe n <$> pathMain (i + 1) "." ""
 
 pathMain :: Indent -> Text -> Text -> Parser Text
 pathMain i p m =
@@ -85,7 +81,7 @@ parseNamed i compType compCon =
   do
     indent i
     _ <- asciiCI compType <?> "asciiCI " <> T.unpack compType
-    _ <- skipSpace <?> "skipSpace"
+    skipMany tabOrSpace
     n <- parseString <?> "N"
     skipToNextLine
     compCon n <$> extractPath (i + 1)
@@ -113,6 +109,7 @@ field i f =
     _ <- asciiCI f
     skipSpace
     _ <- char ':'
+    skipSpace
     p <- parseString
     skipToNextLine
     pure p

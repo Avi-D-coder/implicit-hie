@@ -1,8 +1,8 @@
 cradle:
-  stack:
+  cabal:
     - path: "src"
-      component: "implicit-hie:lib"
-    - path: "app"
+      component: "lib:implicit-hie"
+    - path: "app/Main.hs"
       component: "implicit-hie:exe:gen-hie"
     - path: "test"
       component: "implicit-hie:test:implicit-hie-test"
