@@ -20,7 +20,7 @@ spec = do
       `shouldParse` Exe "implicit-hie-exe" "app/Main.hs"
   describe "Should Succeed"
     $ it "successfully parses test section"
-    $ testSection ~> parseNamed 0 "test-suite" Test
+    $ testSection ~> parseTestSuite 0
       `shouldParse` Test "implicit-hie-test" "test"
   describe "Should Succeed"
     $ it "successfully parses library section"

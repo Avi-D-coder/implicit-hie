@@ -36,8 +36,8 @@ parsePackage =
     <|> (skipToNextLine >> parsePackage)
     <|> pure (Package "" [])
 
-component :: Indent -> Text -> Parser Name
-component i t = do
+componentHeader :: Indent -> Text -> Parser Name
+componentHeader i t = do
   indent i
   _ <- asciiCI t
   skipMany tabOrSpace
@@ -47,14 +47,20 @@ component i t = do
 
 parseComponent :: Indent -> Parser Component
 parseComponent i =
-  parseLib i
-    <|> parseExe i
-    <|> parseNamed i "test-suite" Test
+  parseExe i
+    <|> parseLib i
+    <|> parseTestSuite i
 
 parseLib :: Indent -> Parser Component
-parseLib i = do
-  n <- component i "library"
-  Lib n <$> extractPath (i + 1)
+parseLib i = parseSec i "library" Lib
+
+parseTestSuite :: Indent -> Parser Component
+parseTestSuite i = parseSec i "test-suite" Test
+
+parseExe :: Indent -> Parser Component
+parseExe i = do
+  n <- componentHeader i "executable"
+  Exe n <$> pathMain (i + 1) "." ""
 
 parseQuoted :: Parser Text
 parseQuoted = do
@@ -64,11 +70,6 @@ parseQuoted = do
 parseString :: Parser Name
 parseString = parseQuoted <|> takeWhile1 (not . (\c -> isSpace c || c == ','))
 
-parseExe :: Indent -> Parser Component
-parseExe i = do
-  n <- component i "executable"
-  Exe n <$> pathMain (i + 1) "." ""
-
 pathMain :: Indent -> Text -> Text -> Parser Text
 pathMain i p m =
   (field i "hs-source-dirs" >>= (\p' -> pathMain i p' m))
@@ -76,16 +77,10 @@ pathMain i p m =
     <|> (skipBlockLine i >> pathMain i p m)
     <|> pure (p <> "/" <> m)
 
-parseNamed :: Indent -> Text -> (Name -> Path -> Component) -> Parser Component
-parseNamed i compType compCon =
-  do
-    indent i
-    _ <- asciiCI compType <?> "asciiCI " <> T.unpack compType
-    skipMany tabOrSpace
-    n <- parseString <?> "N"
-    skipToNextLine
-    compCon n <$> extractPath (i + 1)
-    <?> T.unpack ("parseNamed " <> compType)
+parseSec :: Indent -> Text -> (Name -> Path -> Component) -> Parser Component
+parseSec i compType compCon = do
+  n <- componentHeader i compType
+  compCon n <$> extractPath (i + 1)
 
 skipToNextLine :: Parser ()
 skipToNextLine = skipWhile (not . isEndOfLine) >> endOfLine
