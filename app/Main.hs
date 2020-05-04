@@ -18,8 +18,8 @@ main = do
   files <- listDirectory pwd
   cfs <- cabalFiles pwd
   let sOrC =
-        if  | any ((".stack-work" ==) . takeFileName) files -> stackHieYaml
-            | any (("dist-newstyle" ==) . takeFileName) files -> cabalHieYaml
+        if  | any (("dist-newstyle" ==) . takeFileName) files -> cabalHieYaml
+            | any ((".stack-work" ==) . takeFileName) files -> stackHieYaml
             | any (("stack.yaml" ==) . takeFileName) files -> stackHieYaml
             | otherwise -> cabalHieYaml
       gen f = do
