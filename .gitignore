@@ -21,4 +21,5 @@ cabal-tests.log
 
 tags
 TAGS
+codex.tags
 .vim
