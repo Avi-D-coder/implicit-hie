@@ -3,6 +3,8 @@
 module Hie.Yaml
   ( cabalHieYaml,
     stackHieYaml,
+    cabalComponent,
+    stackComponent
   )
 where
 
