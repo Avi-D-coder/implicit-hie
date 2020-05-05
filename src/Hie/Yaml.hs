@@ -9,17 +9,19 @@ where
 import qualified Data.Text as T
 import Hie.Cabal.Parser
 
-cabalHieYaml :: Package -> String
+cabalHieYaml :: Package -> T.Text
 cabalHieYaml (Package n cs) =
-  "cradle:\n"
-    <> indent'
-      ("cabal:\n" <> indent' (unlines (map (fmtComponent . cabalComponent n) cs)))
+  T.pack $
+    "cradle:\n"
+      <> indent'
+        ("cabal:\n" <> indent' (unlines (map (fmtComponent . cabalComponent n) cs)))
 
-stackHieYaml :: Package -> String
+stackHieYaml :: Package -> T.Text
 stackHieYaml (Package n cs) =
-  "cradle:\n"
-    <> indent'
-      ("stack:\n" <> indent' (unlines (map (fmtComponent . stackComponent n) cs)))
+  T.pack $
+    "cradle:\n"
+      <> indent'
+        ("stack:\n" <> indent' (unlines (map (fmtComponent . stackComponent n) cs)))
 
 indent' :: String -> String
 indent' = unlines . map ("  " <>) . lines
