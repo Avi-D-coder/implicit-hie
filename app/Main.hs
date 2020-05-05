@@ -26,7 +26,7 @@ main = do
             | otherwise -> cabal
       gen f = do
         f' <- T.readFile f
-        case parseOnly parsePackage f' of
+        case parsePackage' f' of
           Right r -> do
             let hiePath = fst (splitFileName f) </> "hie.yaml"
             T.writeFile hiePath $ fst sOrC r

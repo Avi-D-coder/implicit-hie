@@ -21,6 +21,9 @@ data Package = Package Name [Component]
 data Component = Lib Name Path | Exe Name Path | Test Name Path
   deriving (Show, Eq, Ord)
 
+parsePackage' :: Text -> Either String Package
+parsePackage' = parseOnly parsePackage
+
 parsePackage :: Parser Package
 parsePackage =
   ( do
