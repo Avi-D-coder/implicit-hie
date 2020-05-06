@@ -4,7 +4,7 @@ module Hie.Yaml
   ( cabalHieYaml,
     stackHieYaml,
     cabalComponent,
-    stackComponent
+    stackComponent,
   )
 where
 
@@ -32,12 +32,14 @@ cabalComponent :: Name -> Component -> (FilePath, String)
 cabalComponent n (Lib "" p) = (T.unpack p, T.unpack $ "lib:" <> n)
 cabalComponent n (Lib cn p) = (T.unpack p, T.unpack $ "lib:" <> n <> ":" <> cn)
 cabalComponent n (Exe cn p) = (T.unpack p, T.unpack $ n <> ":exe:" <> cn)
+cabalComponent n (Bench cn p) = (T.unpack p, T.unpack $ n <> ":exe:" <> cn)
 cabalComponent n (Test cn p) = (T.unpack p, T.unpack $ n <> ":test:" <> cn)
 
 stackComponent :: Name -> Component -> (FilePath, String)
 stackComponent n (Lib "" p) = (T.unpack p, T.unpack $ n <> ":lib")
 stackComponent n (Lib cn p) = (T.unpack p, T.unpack $ n <> ":lib:" <> cn)
 stackComponent n (Exe cn p) = (T.unpack p, T.unpack $ n <> ":exe:" <> cn)
+stackComponent n (Bench cn p) = (T.unpack p, T.unpack $ n <> ":exe:" <> cn)
 stackComponent n (Test cn p) = (T.unpack p, T.unpack $ n <> ":test:" <> cn)
 
 fmtComponent :: (FilePath, String) -> String

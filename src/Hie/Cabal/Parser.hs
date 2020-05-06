@@ -18,7 +18,11 @@ type Indent = Int
 data Package = Package Name [Component]
   deriving (Show, Eq, Ord)
 
-data Component = Lib Name Path | Exe Name Path | Test Name Path
+data Component
+  = Lib Name Path
+  | Exe Name Path
+  | Test Name Path
+  | Bench Name Path
   deriving (Show, Eq, Ord)
 
 parsePackage' :: Text -> Either String Package
@@ -61,9 +65,15 @@ parseTestSuite :: Indent -> Parser Component
 parseTestSuite i = parseSec i "test-suite" Test
 
 parseExe :: Indent -> Parser Component
-parseExe i = do
-  n <- componentHeader i "executable"
-  Exe n <$> pathMain (i + 1) "." ""
+parseExe = parseSecMain Exe "executable"
+
+parseBench :: Indent -> Parser Component
+parseBench = parseSecMain Bench "benchmark"
+
+parseSecMain :: (Name -> Path -> Component) -> Text -> Indent -> Parser Component
+parseSecMain c s i = do
+  n <- componentHeader i s
+  c n <$> pathMain (i + 1) "." ""
 
 parseQuoted :: Parser Text
 parseQuoted = do
