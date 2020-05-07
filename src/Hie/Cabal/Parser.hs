@@ -8,6 +8,7 @@ import Data.Attoparsec.Text
 import Data.Char (isSpace)
 import Data.Text (Text)
 import qualified Data.Text as T
+import Debug.Trace
 
 type Name = Text
 
@@ -45,8 +46,11 @@ parsePackage =
 
 componentHeader :: Indent -> Text -> Parser Name
 componentHeader i t = do
+  traceM $ "indent" <> show i
   indent i
+  traceM $ "asciiCI" <> T.unpack t
   _ <- asciiCI t
+  traceM "parseString"
   skipMany tabOrSpace
   n <- parseString <|> pure ""
   skipToNextLine

@@ -27,6 +27,10 @@ spec = do
     $ libSection ~> parseLib 0
       `shouldParse` Lib "" "src"
   describe "Should Succeed"
+    $ it "successfully parses bench section"
+    $ benchSection ~> parseBench 0
+      `shouldParse` Bench "folds" "benchmarks/folds.hs"
+  describe "Should Succeed"
     $ it "successfully parses package"
     $ fullFile ~> parsePackage
       `shouldParse` Package
@@ -57,23 +61,23 @@ fullFile = "name: implicit-hie\n" <> libSection <> exeSection <> testSection
 exeSection :: Text
 exeSection =
   "executable implicit-hie-exe\n\
-  \  main-is: Main.hs \n\
   \  other-modules:\n\
   \    Paths_implicit_hie\n\
   \  hs-source-dirs:\n\
   \      app\n\
-  \  ghc-options: -O2\n"
+  \  ghc-options: -O2\n\
+  \  main-is: Main.hs \n"
 
 testSection :: Text
 testSection =
   "test-suite implicit-hie-test\n\
   \  type: exitcode-stdio-1.0\n\
-  \  main-is: Spec.hs\n\
   \  other-modules:\n\
   \      Paths_implicit_hie\n\
   \  hs-source-dirs:\n\
   \      test\n\
   \  ghc-options: -fspecialize-aggressively -Wall -Wincomplete-record-updates -Wincomplete-uni-patterns -fno-warn-unused-imports -fno-warn-unused-binds -fno-warn-name-shadowing -fwarn-redundant-constraints -threaded -rtsopts -with-rtsopts=-N\n\
+  \  main-is: Spec.hs\n\
   \  build-depends:\n\
   \      attoparsec\n\
   \    , base >=4.7 && <5\n\
@@ -99,6 +103,15 @@ libSection =
   \  , text\n\
   \  default-language: Haskell2010\n\
   \"
+
+benchSection :: Text
+benchSection =
+  "benchmark folds\n\
+  \  default-language: Haskell2010\n\
+  \  hs-source-dirs:   benchmarks\n\
+  \  ghc-options:      -Wall -threaded\n\
+  \  type:    exitcode-stdio-1.0\n\
+  \  main-is: folds.hs\n"
 
 stackHie :: Text
 stackHie =
