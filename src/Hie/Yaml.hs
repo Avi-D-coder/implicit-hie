@@ -18,7 +18,14 @@ hieYaml sOrC pkgs =
       (sOrC <> ":\n" <> indent' pkgs)
 
 indent' :: String -> String
-indent' = unlines . map ("  " <>) . lines
+indent' =
+  unlines
+    . map
+      ( \l -> case l of
+          "" -> ""
+          _ -> "  " <> l
+      )
+    . lines
 
 cabalComponent :: Name -> Component -> (FilePath, String)
 cabalComponent n (Comp Lib "" p) = (T.unpack p, T.unpack $ "lib:" <> n)
