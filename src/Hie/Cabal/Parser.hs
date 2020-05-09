@@ -74,7 +74,7 @@ parseBench = parseSecMain (Comp Bench) "benchmark"
 parseSecMain :: (Name -> Path -> Component) -> Text -> Indent -> Parser Component
 parseSecMain c s i = do
   n <- componentHeader i s
-  c n <$> pathMain (i + 1) "." ""
+  c n <$> pathMain (i + 1) "./" ""
 
 parseQuoted :: Parser Text
 parseQuoted = do
@@ -139,7 +139,7 @@ extractPath i =
       pure p
   )
     <|> (skipBlockLine i >> extractPath i <?> "skip line")
-    <|> (pure "." <?> "not found") <?> "extractPath"
+    <|> (pure "./" <?> "not found") <?> "extractPath"
 
 -- | Skip at least n spaces
 indent :: Indent -> Parser ()
