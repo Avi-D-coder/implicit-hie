@@ -4,6 +4,8 @@ module Main where
 
 import Control.Monad
 import Data.Attoparsec.Text
+import Data.List
+import Data.Maybe
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import Hie.Cabal.Parser
@@ -17,9 +19,9 @@ main = do
   pwd <- getCurrentDirectory
   files <- listDirectory pwd
   cfs <- cabalFiles pwd
-  let cabal = (cabalHieYaml, "Cabal ")
-      stack = (stackHieYaml, "Stack ")
-      sOrC =
+  let cabal = (cabalComponent, "cabal")
+      stack = (stackComponent, "stack")
+      (fmt, name) =
         if  | any (("dist-newstyle" ==) . takeFileName) files -> cabal
             | any ((".stack-work" ==) . takeFileName) files -> stack
             | any (("stack.yaml" ==) . takeFileName) files -> stack
@@ -27,16 +29,28 @@ main = do
       gen f = do
         f' <- T.readFile f
         case parsePackage' f' of
-          Right r -> do
+          Right (Package n cs) -> do
             let hiePath = fst (splitFileName f) </> "hie.yaml"
-            T.writeFile hiePath $ fst sOrC r
-            pure ("wrote " <> snd sOrC <> hiePath)
-          _ -> pure $ "Could not parse " <> f
+                dir =
+                  fromJust $ stripPrefix (splitDirectories pwd)
+                    $ splitDirectories
+                    $ fst (splitFileName f)
+                pkg =
+                  Package n $
+                    map
+                      ( \(Comp t n p) ->
+                          Comp t n (T.pack $ joinPath dir </> T.unpack p)
+                      )
+                      cs
+            pure $ Just pkg
+          _ -> pure Nothing
   when (null cfs) $ error $
     "No .cabal files found under"
       <> pwd
       <> "\n You may need to run stack build."
-  mapM_ (putStrLn <=< gen) cfs
+  pkgs <- catMaybes <$> mapM gen cfs
+  putStr <$> hieYaml name $ unlines $
+    concatMap (\(Package n cs) -> map ((<> "\n") . fmtComponent . fmt n) cs) pkgs
 
 cabalFiles :: FilePath -> IO [FilePath]
 cabalFiles f = do

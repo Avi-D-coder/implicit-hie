@@ -8,7 +8,6 @@ import Data.Attoparsec.Text
 import Data.Char (isSpace)
 import Data.Text (Text)
 import qualified Data.Text as T
-import Debug.Trace
 
 type Name = Text
 
@@ -19,11 +18,11 @@ type Indent = Int
 data Package = Package Name [Component]
   deriving (Show, Eq, Ord)
 
+data CompType = Lib | Exe | Test | Bench
+  deriving (Show, Eq, Ord)
+
 data Component
-  = Lib Name Path
-  | Exe Name Path
-  | Test Name Path
-  | Bench Name Path
+  = Comp CompType Name Path
   deriving (Show, Eq, Ord)
 
 parsePackage' :: Text -> Either String Package
@@ -46,11 +45,8 @@ parsePackage =
 
 componentHeader :: Indent -> Text -> Parser Name
 componentHeader i t = do
-  traceM $ "indent" <> show i
   indent i
-  traceM $ "asciiCI" <> T.unpack t
   _ <- asciiCI t
-  traceM "parseString"
   skipMany tabOrSpace
   n <- parseString <|> pure ""
   skipToNextLine
@@ -63,16 +59,16 @@ parseComponent i =
     <|> parseTestSuite i
 
 parseLib :: Indent -> Parser Component
-parseLib i = parseSec i "library" Lib
+parseLib i = parseSec i "library" $ Comp Lib
 
 parseTestSuite :: Indent -> Parser Component
-parseTestSuite i = parseSec i "test-suite" Test
+parseTestSuite i = parseSec i "test-suite" $ Comp Test
 
 parseExe :: Indent -> Parser Component
-parseExe = parseSecMain Exe "executable"
+parseExe = parseSecMain (Comp Exe) "executable"
 
 parseBench :: Indent -> Parser Component
-parseBench = parseSecMain Bench "benchmark"
+parseBench = parseSecMain (Comp Bench) "benchmark"
 
 parseSecMain :: (Name -> Path -> Component) -> Text -> Indent -> Parser Component
 parseSecMain c s i = do
