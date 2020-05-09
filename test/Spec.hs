@@ -28,8 +28,10 @@ spec = do
       `shouldParse` Comp Lib "" "src"
   describe "Should Succeed"
     $ it "successfully parses bench section"
-    $ benchSection ~> parseBench 0
-      `shouldParse` Comp Bench "folds" "benchmarks/folds.hs"
+    $ do
+      bs <- T.readFile "test/benchSection"
+      bs ~> parseBench 0
+        `shouldParse` Comp Bench "folds" "benchmarks/folds.hs"
   describe "Should Succeed"
     $ it "successfully parses package"
     $ fullFile ~> parsePackage
@@ -105,15 +107,6 @@ libSection =
   \  , text\n\
   \  default-language: Haskell2010\n\
   \"
-
-benchSection :: Text
-benchSection =
-  "benchmark folds\n\
-  \  default-language: Haskell2010\n\
-  \  hs-source-dirs:   benchmarks\n\
-  \  ghc-options:      -Wall -threaded\n\
-  \  type:    exitcode-stdio-1.0\n\
-  \  main-is: folds.hs\n"
 
 stackHie :: String
 stackHie =

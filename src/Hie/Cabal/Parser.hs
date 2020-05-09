@@ -56,6 +56,7 @@ parseComponent :: Indent -> Parser Component
 parseComponent i =
   parseExe i
     <|> parseLib i
+    <|> parseBench i
     <|> parseTestSuite i
 
 parseLib :: Indent -> Parser Component
