@@ -24,6 +24,8 @@ dependencies:
 - text
 - attoparsec
 - yaml
+- directory
+- filepath
 
 ghc-options:
 # - -O2
@@ -51,8 +53,6 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - implicit-hie
-    - directory
-    - filepath
 
 tests:
   implicit-hie-test:

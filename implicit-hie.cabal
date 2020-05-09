@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 19d5dbbfaaca0af267a9130152cdf8d4a25d59ddd71229a803bfa48283606994
+-- hash: 62b7d90b1ed53933a4c7c61b6392cf2f7ce368607095d9255b80154c6997e755
 
 name:           implicit-hie
 version:        0.1.0.0
@@ -28,6 +28,7 @@ source-repository head
 library
   exposed-modules:
       Hie.Cabal.Parser
+      Hie.Locate
       Hie.Yaml
   other-modules:
       Paths_implicit_hie
@@ -37,6 +38,8 @@ library
   build-depends:
       attoparsec
     , base >=4.7 && <5
+    , directory
+    , filepath
     , text
     , yaml
   default-language: Haskell2010
@@ -69,6 +72,8 @@ test-suite implicit-hie-test
   build-depends:
       attoparsec
     , base >=4.7 && <5
+    , directory
+    , filepath
     , hspec
     , hspec-attoparsec
     , implicit-hie
