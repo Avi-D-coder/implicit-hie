@@ -19,17 +19,17 @@ import System.FilePath.Posix
 nestedCabalFiles :: FilePath -> IO [FilePath]
 nestedCabalFiles f = do
   fs <- listDirectory f
-  case filter ((".cabal" ==) . takeExtension) fs of
-    h : _ -> pure [f </> h]
-    _ ->
-      fmap concat . mapM nestedCabalFiles
-        =<< filterM
-          (fmap (fileTypeIsDirectory . fileTypeFromMetadata) . getFileMetadata)
-          ( map (f </>) $
-              filter
-                (`notElem` [".git", "dist", "dist-newstyle", ".stack-work"])
-                fs
-          )
+  nf <-
+    fmap concat . mapM nestedCabalFiles
+      =<< filterM
+        (fmap (fileTypeIsDirectory . fileTypeFromMetadata) . getFileMetadata)
+        ( map (f </>) $
+            filter
+              (`notElem` [".git", "dist", "dist-newstyle", ".stack-work"])
+              fs
+        )
+  let cf = filter ((".cabal" ==) . takeExtension) fs
+  pure $ map (f </>) cf <> nf
 
 nestedPkg :: FilePath -> FilePath -> IO (Maybe Package)
 nestedPkg parrent child = do
