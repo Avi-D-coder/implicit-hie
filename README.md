@@ -1,7 +1,7 @@
 # implicit-hie
 ```bash
 cd your-stack-or-cabal-package
-gen-hie
+gen-hie > hie.yaml
 ```
 `gen-hie` should be run the root of a cabal or stack project.
 The config type (cabal or stack) is determined by the existence of
@@ -12,16 +12,45 @@ The config type (cabal or stack) is determined by the existence of
 ❯ git clone https://github.com/well-typed/optics.git
 ❯ cd optics
 ❯ gen-hie
-wrote Cabal /home/user/optics/indexed-profunctors/hie.yaml
-wrote Cabal /home/user/optics/optics-th/hie.yaml
-wrote Cabal /home/user/optics/optics-vl/hie.yaml
-wrote Cabal /home/user/optics/codegen/hie.yaml
-wrote Cabal /home/user/optics/optics-core/hie.yaml
-wrote Cabal /home/user/optics/optics-sop/hie.yaml
-wrote Cabal /home/user/optics/optics-extra/hie.yaml
-wrote Cabal /home/user/optics/template-haskell-optics/hie.yaml
-wrote Cabal /home/user/optics/optics/hie.yaml
-wrote Cabal /home/user/optics/metametapost/hie.yaml
+cradle:
+  cabal:
+    - path: "indexed-profunctors/src"
+      component: "lib:indexed-profunctors"
+    
+    - path: "optics-th/src"
+      component: "lib:optics-th"
+    
+    - path: "optics-th/tests"
+      component: "optics-th:test:optics-th-tests"
+    
+    - path: "optics-vl/src"
+      component: "lib:optics-vl"
+    
+    - path: "codegen/./Subtypes.hs"
+      component: "optics-codegen:exe:optics-codegen-subtypes"
+    
+    - path: "optics-core/src"
+      component: "lib:optics-core"
+    
+    - path: "optics-sop/src"
+      component: "lib:optics-sop"
+    
+    - path: "optics-extra/src"
+      component: "lib:optics-extra"
+    
+    - path: "template-haskell-optics/src"
+      component: "lib:template-haskell-optics"
+    
+    - path: "optics/src"
+      component: "lib:optics"
+    
+    - path: "optics/tests"
+      component: "optics:test:optics-tests"
+    
+    - path: "metametapost/src/Cli.hs"
+      component: "metametapost:exe:metametapost-optics"
+    
+
 ```
 
 ## Features
