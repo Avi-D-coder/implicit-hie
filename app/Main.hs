@@ -19,13 +19,11 @@ main = do
   pwd <- getCurrentDirectory
   files <- listDirectory pwd
   cfs <- cabalFiles pwd
-  let cabal = (cabalComponent, "cabal")
-      stack = (stackComponent, "stack")
-      (fmt, name) =
-        if  | any (("dist-newstyle" ==) . takeFileName) files -> cabal
-            | any ((".stack-work" ==) . takeFileName) files -> stack
-            | any (("stack.yaml" ==) . takeFileName) files -> stack
-            | otherwise -> cabal
+  let name =
+        if  | any (("dist-newstyle" ==) . takeFileName) files -> "cabal"
+            | any ((".stack-work" ==) . takeFileName) files -> "stack"
+            | any (("stack.yaml" ==) . takeFileName) files -> "stack"
+            | otherwise -> "cabal"
       gen f = do
         f' <- T.readFile f
         case parsePackage' f' of
@@ -49,8 +47,7 @@ main = do
       <> pwd
       <> "\n You may need to run stack build."
   pkgs <- catMaybes <$> mapM gen cfs
-  putStr <$> hieYaml name $ unlines $
-    concatMap (\(Package n cs) -> map ((<> "\n") . fmtComponent . fmt n) cs) pkgs
+  putStr <$> hieYaml name $ fmtPkgs name pkgs
 
 cabalFiles :: FilePath -> IO [FilePath]
 cabalFiles f = do

@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: ee9bceb3ed6e6ee053acc1dc9dde3033fed8e9f565a8c8bbdfa52f9be9c507aa
+-- hash: 19d5dbbfaaca0af267a9130152cdf8d4a25d59ddd71229a803bfa48283606994
 
 name:           implicit-hie
 version:        0.1.0.0
@@ -33,7 +33,7 @@ library
       Paths_implicit_hie
   hs-source-dirs:
       src
-  ghc-options: -O2 -flate-specialise -fexpose-all-unfoldings -fspecialize-aggressively -Wall -Wincomplete-record-updates -Wincomplete-uni-patterns -fno-warn-unused-imports -fno-warn-unused-binds -fno-warn-name-shadowing -fwarn-redundant-constraints
+  ghc-options: -Wall -Wincomplete-record-updates -Wincomplete-uni-patterns -fno-warn-unused-imports -fno-warn-unused-binds -fno-warn-name-shadowing -fwarn-redundant-constraints
   build-depends:
       attoparsec
     , base >=4.7 && <5
@@ -47,7 +47,7 @@ executable gen-hie
       Paths_implicit_hie
   hs-source-dirs:
       app
-  ghc-options: -O2 -flate-specialise -fexpose-all-unfoldings -fspecialize-aggressively -Wall -Wincomplete-record-updates -Wincomplete-uni-patterns -fno-warn-unused-imports -fno-warn-unused-binds -fno-warn-name-shadowing -fwarn-redundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  ghc-options: -Wall -Wincomplete-record-updates -Wincomplete-uni-patterns -fno-warn-unused-imports -fno-warn-unused-binds -fno-warn-name-shadowing -fwarn-redundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       attoparsec
     , base >=4.7 && <5
@@ -65,7 +65,7 @@ test-suite implicit-hie-test
       Paths_implicit_hie
   hs-source-dirs:
       test
-  ghc-options: -O2 -flate-specialise -fexpose-all-unfoldings -fspecialize-aggressively -Wall -Wincomplete-record-updates -Wincomplete-uni-patterns -fno-warn-unused-imports -fno-warn-unused-binds -fno-warn-name-shadowing -fwarn-redundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  ghc-options: -Wall -Wincomplete-record-updates -Wincomplete-uni-patterns -fno-warn-unused-imports -fno-warn-unused-binds -fno-warn-name-shadowing -fwarn-redundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       attoparsec
     , base >=4.7 && <5

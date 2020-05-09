@@ -3,6 +3,7 @@
 module Hie.Yaml
   ( hieYaml,
     fmtComponent,
+    fmtPkgs,
     cabalComponent,
     stackComponent,
   )
@@ -48,6 +49,16 @@ fmtComponent (p, c) =
     <> "\n  "
     <> "component: "
     <> dQuote c
+
+dropLast :: [a] -> [a]
+dropLast l = take (length l - 1) l
+
+fmtPkgs :: String -> [Package] -> String
+fmtPkgs sOrC pkgs = dropLast $ unlines l
+  where
+    comp = if sOrC == "cabal" then cabalComponent else stackComponent
+    f (Package n cs) = map ((<> "\n") . fmtComponent . comp n) cs
+    l = concatMap f pkgs
 
 dQuote :: String -> String
 dQuote t = '"' : t <> "\""

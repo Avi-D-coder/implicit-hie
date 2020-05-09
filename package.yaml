@@ -26,10 +26,10 @@ dependencies:
 - yaml
 
 ghc-options:
-- -O2
-- -flate-specialise
-- -fexpose-all-unfoldings
-- -fspecialize-aggressively
+# - -O2
+# - -flate-specialise
+# - -fexpose-all-unfoldings
+# - -fspecialize-aggressively
 - -Wall
 - -Wincomplete-record-updates
 - -Wincomplete-uni-patterns
