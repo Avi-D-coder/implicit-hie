@@ -26,7 +26,6 @@ import Hie.Yaml
 import System.Directory
 import System.FilePath.Posix
 import System.FilePattern.Directory (getDirectoryFiles)
-import Debug.Trace
 
 newtype Pkgs = Pkgs [FilePath]
   deriving (Eq, Ord)
@@ -50,7 +49,7 @@ cabalPkgs p = do
       [] -> fail "no cabal files found"
       h : _ -> pure [p </> h]
     xs -> do
-      cd <- liftIO $ map (p </>) <$> getDirectoryFiles p (map (matchDirs . traceShowId . T.unpack) xs)
+      cd <- liftIO $ map (p </>) <$> getDirectoryFiles p (map (matchDirs . T.unpack) xs)
       cf <-
         liftIO $
           mapM (\p -> if takeExtension p == ".cabal" then pure [p] else cfs p) cd
