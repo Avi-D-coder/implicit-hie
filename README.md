@@ -59,7 +59,8 @@ If you use more advanced features, the generated config may not be complete.
 
 - [x] multi component cabal, stack projects
 - [x] multiple executables under a single path
-- [ ] multiple paths provided to `hs-source-dirs`
+- [x] multiple paths provided to `hs-source-dirs`
+- [x] lookup nested packages in `cabal.project` or `stack.yaml`
 - [ ] common stanzas
 
 ### Work, Twitter

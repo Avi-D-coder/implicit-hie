@@ -14,6 +14,7 @@ import Control.Monad
 import Control.Monad.IO.Class
 import Control.Monad.Trans.Maybe
 import Data.Attoparsec.Text (parseOnly)
+import Data.Either
 import Data.List
 import Data.Maybe
 import qualified Data.Text as T
@@ -23,7 +24,6 @@ import GHC.Generics
 import Hie.Cabal.Parser
 import Hie.Yaml
 import System.Directory
-import System.Directory.Internal
 import System.FilePath.Posix
 import System.FilePattern.Directory (getDirectoryFiles)
 
@@ -42,12 +42,24 @@ stackYamlPkgs p = liftIO $
 
 cabalPkgs :: FilePath -> MaybeT IO [FilePath]
 cabalPkgs p = do
-  cp <- liftIO (try $ T.readFile $ p </> "cabal.project" :: IO (Either IOException T.Text))
-  case parseOnly extractPkgs <$> cp of
-    Right (Right f) -> liftIO $ map (p </>) <$> getDirectoryFiles p (map T.unpack f)
-    _ -> filter ((".cabal" ==) . takeExtension) <$> liftIO (listDirectory p) >>= \case
+  cp <- cabalP "cabal.project"
+  cl <- cabalP "cabal.project.local"
+  case concat . rights $ map (parseOnly extractPkgs) $ rights [cp, cl] of
+    [] -> liftIO (cfs p) >>= \case
       [] -> fail "no cabal files found"
       h : _ -> pure [p </> h]
+    xs -> do
+      cd <- liftIO $ map (p </>) <$> getDirectoryFiles p (map (matchDirs . T.unpack) xs)
+      cf <-
+        liftIO $
+          mapM (\p -> if takeExtension p == ".cabal" then pure [p] else cfs p) cd
+      pure $ concat cf
+  where
+    cabalP n = liftIO (try $ T.readFile $ p </> n :: IO (Either IOException T.Text))
+    cfs d = filter ((".cabal" ==) . takeExtension) <$> listDirectory d
+    matchDirs p | "/" `isSuffixOf` p = p <> "*.cabal"
+    matchDirs p | "*" `isSuffixOf` p || takeExtension p == "" = p <> "/*.cabal"
+    matchDirs p = p
 
 nestedPkg :: FilePath -> FilePath -> IO (Maybe Package)
 nestedPkg parrent child = do
