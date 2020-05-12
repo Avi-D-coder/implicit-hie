@@ -17,21 +17,29 @@ spec = do
   describe "Should Succeed"
     $ it "successfully parses executable section"
     $ exeSection ~> parseExe 0
-      `shouldParse` Comp Exe "implicit-hie-exe" "app/Main.hs"
+      `shouldParse` [Comp Exe "implicit-hie-exe" "app/Main.hs"]
   describe "Should Succeed"
     $ it "successfully parses test section"
     $ testSection ~> parseTestSuite 0
-      `shouldParse` Comp Test "implicit-hie-test" "test"
+      `shouldParse` [Comp Test "implicit-hie-test" "test"]
   describe "Should Succeed"
     $ it "successfully parses library section"
     $ libSection ~> parseLib 0
-      `shouldParse` Comp Lib "" "src"
+      `shouldParse` [Comp Lib "" "src"]
+  describe "Should Succeed"
+    $ it "successfully parses library section with 2 hs-source-dirs"
+    $ libSection2 ~> parseLib 0
+      `shouldParse` [Comp Lib "" "src", Comp Lib "" "src2"]
+  describe "Should Succeed"
+    $ it "successfully parses library section with 2 paths under hs-source-dirs"
+    $ libSection3 ~> parseLib 0
+      `shouldParse` [Comp Lib "" "src", Comp Lib "" "src2"]
   describe "Should Succeed"
     $ it "successfully parses bench section"
     $ do
       bs <- T.readFile "test/benchSection"
       bs ~> parseBench 0
-        `shouldParse` Comp Bench "folds" "benchmarks/folds.hs"
+        `shouldParse` [Comp Bench "folds" "benchmarks/folds.hs"]
   describe "Should Succeed"
     $ it "successfully parses package"
     $ fullFile ~> parsePackage
@@ -58,6 +66,17 @@ spec = do
       o <- readFile "test/hie.yaml.cbl"
       (hieYaml "cabal" . fmtPkgs "cabal" . (: []) <$> parseOnly parsePackage f)
         `shouldBe` Right o
+  describe "Should Succeed"
+    $ it "successfully parses comma list"
+    $ ("one, two" :: Text) ~> parseList 1 `shouldParse` ["one", "two"]
+  describe "Should Succeed"
+    $ it "successfully parses newline list"
+    $ ("one\n two \n three3" :: Text) ~> parseList 1
+      `shouldParse` ["one", "two", "three3"]
+  describe "Should Succeed"
+    $ it "successfully parses newline list"
+    $ ("one\n two,  three3" :: Text) ~> parseList 1
+      `shouldParse` ["one", "two", "three3"]
 
 fullFile :: Text
 fullFile = "name: implicit-hie\n" <> libSection <> exeSection <> testSection
@@ -100,6 +119,43 @@ libSection =
   \  Paths_implicit_hie\n\
   \  hs-source-dirs:\n\
   \  src\n\
+  \  ghc-options: -fspecialize-aggressively -Wall -Wincomplete-record-updates -Wincomplete-uni-patterns -fno-warn-unused-imports -fno-warn-unused-binds -fno-warn-name-shadowing -fwarn-redundant-constraints\n\
+  \  build-depends:\n\
+  \  attoparsec\n\
+  \  , base >=4.7 && <5\n\
+  \  , text\n\
+  \  default-language: Haskell2010\n\
+  \"
+
+libSection2 :: Text
+libSection2 =
+  "library\n\
+  \  exposed-modules:\n\
+  \  Lib\n\
+  \  other-modules:\n\
+  \  Paths_implicit_hie\n\
+  \  hs-source-dirs:\n\
+  \    src\n\
+  \  hs-source-dirs:\n\
+  \   src2\n\
+  \  ghc-options: -fspecialize-aggressively -Wall -Wincomplete-record-updates -Wincomplete-uni-patterns -fno-warn-unused-imports -fno-warn-unused-binds -fno-warn-name-shadowing -fwarn-redundant-constraints\n\
+  \  build-depends:\n\
+  \  attoparsec\n\
+  \  , base >=4.7 && <5\n\
+  \  , text\n\
+  \  default-language: Haskell2010\n\
+  \"
+
+libSection3 :: Text
+libSection3 =
+  "library\n\
+  \  exposed-modules:\n\
+  \  Lib\n\
+  \  other-modules:\n\
+  \  Paths_implicit_hie\n\
+  \  hs-source-dirs:\n\
+  \   src,\n\
+  \   src2\n\
   \  ghc-options: -fspecialize-aggressively -Wall -Wincomplete-record-updates -Wincomplete-uni-patterns -fno-warn-unused-imports -fno-warn-unused-binds -fno-warn-name-shadowing -fwarn-redundant-constraints\n\
   \  build-depends:\n\
   \  attoparsec\n\
