@@ -81,7 +81,9 @@ parseSecMain c s i = do
 parseQuoted :: Parser Text
 parseQuoted = do
   q <- char '"' <|> char '\''
-  takeTill (== q)
+  s <- takeTill (== q)
+  _ <- char q
+  pure s
 
 parseString :: Parser Name
 parseString = parseQuoted <|> unqualName

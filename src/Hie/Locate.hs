@@ -3,17 +3,17 @@
 
 module Hie.Locate
   ( nestedPkg,
-    nestedCabalFiles,
     stackYamlPkgs,
-    cabalProjectPkgs,
+    cabalPkgs,
   )
 where
 
 import Control.Applicative
+import Control.Exception
 import Control.Monad
 import Control.Monad.IO.Class
 import Control.Monad.Trans.Maybe
-import Data.Attoparsec.Text
+import Data.Attoparsec.Text (parseOnly)
 import Data.List
 import Data.Maybe
 import qualified Data.Text as T
@@ -25,6 +25,7 @@ import Hie.Yaml
 import System.Directory
 import System.Directory.Internal
 import System.FilePath.Posix
+import System.FilePattern.Directory (getDirectoryFiles)
 
 newtype Pkgs = Pkgs [FilePath]
   deriving (Eq, Ord)
@@ -39,27 +40,14 @@ stackYamlPkgs p = liftIO $
     Right (Pkgs f) -> pure f
     Left e -> fail $ show e
 
-cabalProjectPkgs :: FilePath -> MaybeT IO [FilePath]
-cabalProjectPkgs p = do
-  cp <- liftIO $ T.readFile $ p </> "cabal.project"
-  case parseOnly extractPkgs cp of
-    Right f -> pure $ map T.unpack f
-    _ -> fail "No packages found"
-
-nestedCabalFiles :: FilePath -> IO [FilePath]
-nestedCabalFiles f = do
-  fs <- listDirectory f
-  nf <-
-    fmap concat . mapM nestedCabalFiles
-      =<< filterM
-        (fmap (fileTypeIsDirectory . fileTypeFromMetadata) . getFileMetadata)
-        ( map (f </>) $
-            filter
-              (`notElem` [".git", "dist", "dist-newstyle", ".stack-work"])
-              fs
-        )
-  let cf = filter ((".cabal" ==) . takeExtension) fs
-  pure $ map (f </>) cf <> nf
+cabalPkgs :: FilePath -> MaybeT IO [FilePath]
+cabalPkgs p = do
+  cp <- liftIO (try $ T.readFile $ p </> "cabal.project" :: IO (Either IOException T.Text))
+  case parseOnly extractPkgs <$> cp of
+    Right (Right f) -> liftIO $ map (p </>) <$> getDirectoryFiles p (map T.unpack f)
+    _ -> filter ((".cabal" ==) . takeExtension) <$> liftIO (listDirectory p) >>= \case
+      [] -> fail "no cabal files found"
+      h : _ -> pure [p </> h]
 
 nestedPkg :: FilePath -> FilePath -> IO (Maybe Package)
 nestedPkg parrent child = do

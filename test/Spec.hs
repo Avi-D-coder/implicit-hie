@@ -74,8 +74,12 @@ spec = do
     $ ("one\n two \n three3" :: Text) ~> parseList 1
       `shouldParse` ["one", "two", "three3"]
   describe "Should Succeed"
-    $ it "successfully parses newline list"
+    $ it "successfully parses newline comma list"
     $ ("one\n two,  three3" :: Text) ~> parseList 1
+      `shouldParse` ["one", "two", "three3"]
+  describe "Should Succeed"
+    $ it "quoted list"
+    $ ("\"one\"\n two\n three3" :: Text) ~> parseList 1
       `shouldParse` ["one", "two", "three3"]
 
 fullFile :: Text
