@@ -22,9 +22,11 @@ description: "Auto generate a stack or cabal multi component hie.yaml file"
 dependencies:
 - base >= 4.7 && < 5
 - text
+- transformers
 - attoparsec
 - yaml
 - directory
+- filepattern
 - filepath
 
 ghc-options:

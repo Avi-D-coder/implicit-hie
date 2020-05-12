@@ -6,6 +6,7 @@ import Control.Applicative
 import Control.Monad
 import Data.Attoparsec.Text
 import Data.Char
+import Data.Maybe
 import Data.Text (Text)
 import qualified Data.Text as T
 
@@ -86,7 +87,7 @@ parseString :: Parser Name
 parseString = parseQuoted <|> unqualName
 
 unqualName :: Parser Text
-unqualName = takeWhile1 (\c -> isAlphaNum c || c `elem` ("-_./" :: String))
+unqualName = takeWhile1 (not . (\c -> isSpace c || c == ','))
 
 parseList :: Indent -> Parser [Text]
 parseList i = items <|> (emptyOrComLine >> indent i >> items)
@@ -166,3 +167,6 @@ indent :: Indent -> Parser Int
 indent i = do
   c <- length <$> many' tabOrSpace
   if c >= i then pure c else fail "insufficient indent"
+
+extractPkgs :: Parser [T.Text]
+extractPkgs = join . catMaybes <$> many' (Just <$> field 0 "packages" parseList <|> (skipToNextLine >> pure Nothing))

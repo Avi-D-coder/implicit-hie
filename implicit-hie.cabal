@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 62b7d90b1ed53933a4c7c61b6392cf2f7ce368607095d9255b80154c6997e755
+-- hash: 18f92037a7863d121ac45e847f7dc6177adf0ebc7951dfa1588340f86e64456b
 
 name:           implicit-hie
 version:        0.1.0.0
@@ -40,7 +40,9 @@ library
     , base >=4.7 && <5
     , directory
     , filepath
+    , filepattern
     , text
+    , transformers
     , yaml
   default-language: Haskell2010
 
@@ -56,8 +58,10 @@ executable gen-hie
     , base >=4.7 && <5
     , directory
     , filepath
+    , filepattern
     , implicit-hie
     , text
+    , transformers
     , yaml
   default-language: Haskell2010
 
@@ -74,9 +78,11 @@ test-suite implicit-hie-test
     , base >=4.7 && <5
     , directory
     , filepath
+    , filepattern
     , hspec
     , hspec-attoparsec
     , implicit-hie
     , text
+    , transformers
     , yaml
   default-language: Haskell2010
