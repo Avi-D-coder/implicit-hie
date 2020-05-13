@@ -23,6 +23,7 @@ main = do
   let name =
         if  | any (("dist-newstyle" ==) . takeFileName) files -> "cabal"
             | any ((".stack-work" ==) . takeFileName) files -> "stack"
+            | any (("cabal.project" ==) . takeFileName) files -> "cabal"
             | any (("stack.yaml" ==) . takeFileName) files -> "stack"
             | otherwise -> "cabal"
   cfs <- runMaybeT $ case name of

@@ -37,7 +37,10 @@ instance FromJSON Pkgs where
 stackYamlPkgs :: FilePath -> MaybeT IO [FilePath]
 stackYamlPkgs p = liftIO $
   decodeFileEither (p </> "stack.yaml") >>= \case
-    Right (Pkgs f) -> pure f
+    Right (Pkgs f) ->
+      liftIO $
+        map (p </>)
+          <$> getDirectoryFiles p (map (</> "*.cabal") f)
     Left e -> fail $ show e
 
 cabalPkgs :: FilePath -> MaybeT IO [FilePath]
