@@ -30,7 +30,7 @@ indent' =
 
 cabalComponent :: Name -> Component -> (FilePath, String)
 cabalComponent n (Comp Lib "" p) = (T.unpack p, T.unpack $ "lib:" <> n)
-cabalComponent n (Comp Lib cn p) = (T.unpack p, T.unpack $ "lib:" <> n <> ":" <> cn)
+cabalComponent n (Comp Lib cn p) = (T.unpack p, T.unpack $ n <> ":lib:" <> cn)
 cabalComponent n (Comp Exe cn p) = (T.unpack p, T.unpack $ n <> ":exe:" <> cn)
 cabalComponent n (Comp Bench cn p) = (T.unpack p, T.unpack $ n <> ":bench:" <> cn)
 cabalComponent n (Comp Test cn p) = (T.unpack p, T.unpack $ n <> ":test:" <> cn)
