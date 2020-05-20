@@ -32,6 +32,8 @@ library
       Hie.Yaml
   other-modules:
       Paths_implicit_hie
+  autogen-modules:
+      Paths_implicit_hie
   hs-source-dirs:
       src
   ghc-options: -Wall -Wincomplete-record-updates -Wincomplete-uni-patterns -fno-warn-unused-imports -fno-warn-unused-binds -fno-warn-name-shadowing -fwarn-redundant-constraints
@@ -49,6 +51,8 @@ library
 executable gen-hie
   main-is: Main.hs
   other-modules:
+      Paths_implicit_hie
+  autogen-modules:
       Paths_implicit_hie
   hs-source-dirs:
       app
@@ -69,6 +73,8 @@ test-suite implicit-hie-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
+      Paths_implicit_hie
+  autogen-modules:
       Paths_implicit_hie
   hs-source-dirs:
       test
