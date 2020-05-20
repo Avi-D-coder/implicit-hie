@@ -76,7 +76,7 @@ parseBench = parseSecMain (Comp Bench) "benchmark"
 parseSecMain :: (Name -> Path -> Component) -> Text -> Indent -> Parser [Component]
 parseSecMain c s i = do
   n <- componentHeader i s
-  p <- pathMain (i + 1) ["./"] "" []
+  p <- pathMain (i + 1) ["./"] "" [] []
   pure $ map (c n) p
 
 parseQuoted :: Parser Text
@@ -106,17 +106,24 @@ parseList i = items <|> (emptyOrComLine >> indent i >> items)
           <|> pure []
       pure $ h : t
 
-pathMain :: Indent -> [Text] -> Text -> [Text] -> Parser [Text]
-pathMain i p m o =
-  (hsSourceDir i >>= (\p' -> pathMain i p' m o))
-    <|> (field i "main-is" (const parseString) >>= flip (pathMain i p) o)
-    <|> (field i "other-modules" parseList >>= pathMain i p m)
-    <|> (skipBlockLine i >> pathMain i p m o)
-    <|> pure (map (<//> m) p <> [p' <//> (o' <> ".hs") | p' <- p, o' <- o])
-
+pathMain :: Indent -> [Text] -> Text -> [Text] -> [Text] -> Parser [Text]
+pathMain i p m o a =
+  (hsSourceDir i >>= (\p' -> pathMain i p' m o a))
+    <|> (field i "main-is" (const parseString) >>= (\m' -> pathMain i p m' o a))
+    <|> (field i "other-modules" parseList >>= flip (pathMain i p m) a)
+    <|> (field i "autogen-modules" parseList >>= pathMain i p m o)
+    <|> (skipBlockLine i >> pathMain i p m o a)
+    <|> pure
+      ( map (<//> m) p
+          <> [ p' <//> (o' <> ".hs")
+               | p' <- p,
+                 o' <- filter (`notElem` a) o
+             ]
+      )
 
 (<//>) :: Text -> Text -> Text
 a <//> b = T.pack (T.unpack a </> T.unpack b)
+
 infixr 5 <//>
 
 parseSec :: Indent -> Text -> (Name -> Path -> Component) -> Parser [Component]

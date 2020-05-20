@@ -17,9 +17,7 @@ spec = do
   describe "Should Succeed"
     $ it "successfully parses executable section"
     $ exeSection ~> parseExe 0
-      `shouldParse` [ Comp Exe "implicit-hie-exe" "app/Main.hs",
-                      Comp Exe "implicit-hie-exe" "app/Paths_implicit_hie.hs"
-                    ]
+      `shouldParse` [Comp Exe "gen-hie" "app/Main.hs"]
   describe "Should Succeed"
     $ it "successfully parses test section"
     $ testSection ~> parseTestSuite 0
@@ -50,8 +48,7 @@ spec = do
         `shouldParse` Package
           "implicit-hie"
           [ Comp Lib "" "src",
-            Comp Exe "implicit-hie-exe" "app/Main.hs",
-            Comp Exe "implicit-hie-exe" "app/Paths_implicit_hie.hs",
+            Comp Exe "gen-hie" "app/Main.hs",
             Comp Test "implicit-hie-test" "test"
           ]
   describe "Should Succeed"
@@ -92,8 +89,10 @@ spec = do
 
 exeSection :: Text
 exeSection =
-  "executable implicit-hie-exe\n\
+  "executable gen-hie\n\
   \  other-modules:\n\
+  \    Paths_implicit_hie\n\
+  \  autogen-modules:\n\
   \    Paths_implicit_hie\n\
   \  hs-source-dirs:\n\
   \      app\n\

@@ -1,28 +1,22 @@
 cradle:
   cabal:
-    - path: "src"
+    - path: "./src"
       component: "lib:haskell-language-server"
 
-    - path: "exe/Main.hs"
+    - path: "./exe/Main.hs"
       component: "haskell-language-server:exe:haskell-language-server"
 
-    - path: "exe/Arguments.hs"
+    - path: "./exe/Arguments.hs"
       component: "haskell-language-server:exe:haskell-language-server"
 
-    - path: "exe/Paths_haskell_language_server.hs"
-      component: "haskell-language-server:exe:haskell-language-server"
-
-    - path: "exe/Wrapper.hs"
+    - path: "./exe/Wrapper.hs"
       component: "haskell-language-server:exe:haskell-language-server-wrapper"
 
-    - path: "exe/Arguments.hs"
+    - path: "./exe/Arguments.hs"
       component: "haskell-language-server:exe:haskell-language-server-wrapper"
 
-    - path: "exe/Paths_haskell_language_server.hs"
-      component: "haskell-language-server:exe:haskell-language-server-wrapper"
-
-    - path: "test/functional"
+    - path: "./test/functional"
       component: "haskell-language-server:test:func-test"
 
-    - path: "test/utils"
+    - path: "./test/utils"
       component: "haskell-language-server:lib:hls-test-utils"

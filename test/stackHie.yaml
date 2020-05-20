@@ -6,8 +6,5 @@ cradle:
     - path: "./app/Main.hs"
       component: "implicit-hie:exe:gen-hie"
 
-    - path: "./app/Paths_implicit_hie.hs"
-      component: "implicit-hie:exe:gen-hie"
-
     - path: "./test"
       component: "implicit-hie:test:implicit-hie-test"
