@@ -61,9 +61,9 @@ If you use more advanced features, the generated config may not be complete.
 - [x] multiple executables under a single path
 - [x] multiple paths provided to `hs-source-dirs`
 - [x] lookup nested packages in `cabal.project` or `stack.yaml`
+- [x] Handle Exe and Bench `other-modules`
 - [ ] common stanzas
 
 ### Work, Twitter
-<!-- - If you value my contributions to Haskell tooling, FP oriented GC, or open source FP in general, please consider sponsoring me via Github. -->
 - I'm currently looking for work as a Haskell or Rust developer. I can be reached via email or a twitter message.
 - Follow me on twitter [@AviDessauer](https://twitter.com/AviDessauer).
