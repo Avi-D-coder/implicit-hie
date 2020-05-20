@@ -17,7 +17,9 @@ spec = do
   describe "Should Succeed"
     $ it "successfully parses executable section"
     $ exeSection ~> parseExe 0
-      `shouldParse` [Comp Exe "implicit-hie-exe" "app/Main.hs"]
+      `shouldParse` [ Comp Exe "implicit-hie-exe" "app/Main.hs",
+                      Comp Exe "implicit-hie-exe" "app/Paths_implicit_hie.hs"
+                    ]
   describe "Should Succeed"
     $ it "successfully parses test section"
     $ testSection ~> parseTestSuite 0
@@ -42,13 +44,16 @@ spec = do
         `shouldParse` [Comp Bench "folds" "benchmarks/folds.hs"]
   describe "Should Succeed"
     $ it "successfully parses package"
-    $ fullFile ~> parsePackage
-      `shouldParse` Package
-        "implicit-hie"
-        [ Comp Lib "" "src",
-          Comp Exe "implicit-hie-exe" "app/Main.hs",
-          Comp Test "implicit-hie-test" "test"
-        ]
+    $ do
+      cf <- T.readFile "implicit-hie.cabal"
+      cf ~> parsePackage
+        `shouldParse` Package
+          "implicit-hie"
+          [ Comp Lib "" "src",
+            Comp Exe "implicit-hie-exe" "app/Main.hs",
+            Comp Exe "implicit-hie-exe" "app/Paths_implicit_hie.hs",
+            Comp Test "implicit-hie-test" "test"
+          ]
   describe "Should Succeed"
     $ it
       "skips to end of block section"
@@ -57,10 +62,13 @@ spec = do
             `leavesUnconsumed` r
   describe "Should Succeed"
     $ it "successfully generates stack hie.yaml"
-    $ (hieYaml "stack" . fmtPkgs "stack" . (: []) <$> parseOnly parsePackage fullFile)
-      `shouldBe` Right stackHie
+    $ do
+      sf <- readFile "test/stackHie.yaml"
+      cf <- T.readFile "implicit-hie.cabal"
+      (hieYaml "stack" . fmtPkgs "stack" . (: []) <$> parseOnly parsePackage cf)
+        `shouldBe` Right sf
   describe "Should Succeed"
-    $ it "successfully generates stack hie.yaml"
+    $ it "successfully generates cabal hie.yaml for haskell-language-server"
     $ do
       f <- T.readFile "test/haskell-language-server-cabal"
       o <- readFile "test/hie.yaml.cbl"
@@ -81,9 +89,6 @@ spec = do
     $ it "quoted list"
     $ ("\"one\"\n two\n three3" :: Text) ~> parseList 1
       `shouldParse` ["one", "two", "three3"]
-
-fullFile :: Text
-fullFile = "name: implicit-hie\n" <> libSection <> exeSection <> testSection
 
 exeSection :: Text
 exeSection =
@@ -166,18 +171,4 @@ libSection3 =
   \  , base >=4.7 && <5\n\
   \  , text\n\
   \  default-language: Haskell2010\n\
-  \"
-
-stackHie :: String
-stackHie =
-  "cradle:\n\
-  \  stack:\n\
-  \    - path: \"src\"\n\
-  \      component: \"implicit-hie:lib\"\n\
-  \\n\
-  \    - path: \"app/Main.hs\"\n\
-  \      component: \"implicit-hie:exe:implicit-hie-exe\"\n\
-  \\n\
-  \    - path: \"test\"\n\
-  \      component: \"implicit-hie:test:implicit-hie-test\"\n\
   \"

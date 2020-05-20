@@ -6,11 +6,23 @@ cradle:
     - path: "exe/Main.hs"
       component: "haskell-language-server:exe:haskell-language-server"
 
+    - path: "exe/Arguments.hs"
+      component: "haskell-language-server:exe:haskell-language-server"
+
+    - path: "exe/Paths_haskell_language_server.hs"
+      component: "haskell-language-server:exe:haskell-language-server"
+
     - path: "exe/Wrapper.hs"
+      component: "haskell-language-server:exe:haskell-language-server-wrapper"
+
+    - path: "exe/Arguments.hs"
+      component: "haskell-language-server:exe:haskell-language-server-wrapper"
+
+    - path: "exe/Paths_haskell_language_server.hs"
       component: "haskell-language-server:exe:haskell-language-server-wrapper"
 
     - path: "test/functional"
       component: "haskell-language-server:test:func-test"
 
     - path: "test/utils"
-      component: "lib:haskell-language-server:hls-test-utils"
+      component: "haskell-language-server:lib:hls-test-utils"
