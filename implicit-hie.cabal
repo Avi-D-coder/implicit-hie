@@ -9,6 +9,8 @@ cabal-version: 2.0
 name:           implicit-hie
 version:        0.1.0.0
 description:    Auto generate a stack or cabal multi component hie.yaml file
+category:       Development, Tools, Hie, HLS
+synopsis:       Auto generate hie-bios cradles & hie.yaml
 homepage:       https://github.com/Avi-D-coder/implicit-hie#readme
 bug-reports:    https://github.com/Avi-D-coder/implicit-hie/issues
 author:         Avi Dessauer
