@@ -1,11 +1,4 @@
-cabal-version: 2.0
-
--- This file has been generated from package.yaml by hpack version 0.33.0.
---
--- see: https://github.com/sol/hpack
---
--- hash: 18f92037a7863d121ac45e847f7dc6177adf0ebc7951dfa1588340f86e64456b
-
+cabal-version: 2.4
 name:           implicit-hie
 version:        0.1.0.0
 description:    Auto generate a stack or cabal multi component hie.yaml file
@@ -16,41 +9,68 @@ bug-reports:    https://github.com/Avi-D-coder/implicit-hie/issues
 author:         Avi Dessauer
 maintainer:     avi.the.coder@gmail.com
 copyright:      2020
-license:        BSD3
+license:        BSD-3-Clause
 license-file:   LICENSE
 build-type:     Simple
 extra-source-files:
     README.md
     ChangeLog.md
+    test/testdata/cabal-helper/**/*.hs
+    test/testdata/cabal-helper/**/*.cabal
+    test/testdata/cabal-helper/**/*.project
 
 source-repository head
   type: git
   location: https://github.com/Avi-D-coder/implicit-hie
 
+flag cabalHelper
+  Description: Enable Cabal-Helper dependencies
+  Default:     True
+  Manual:      True
+
+common cabal-helper
+  if flag(cabalHelper)
+    cpp-options: -DCABAL_HELPER_SUPPORT
+
 library
+  import: cabal-helper
   exposed-modules:
       Hie.Cabal.Parser
       Hie.Locate
+      Hie.Logger
       Hie.Yaml
+
+  if flag(cabalHelper)
+    exposed-modules:
+      Hie.CabalHelper
+    build-depends:
+      cabal-helper >= 1.1 && <1.2
+
   other-modules:
       Paths_implicit_hie
   autogen-modules:
       Paths_implicit_hie
   hs-source-dirs:
       src
-  ghc-options: -Wall -Wincomplete-record-updates -Wincomplete-uni-patterns -fno-warn-unused-imports -fno-warn-unused-binds -fno-warn-name-shadowing -fwarn-redundant-constraints
+  ghc-options: -Wall -Wincomplete-record-updates -Wincomplete-uni-patterns -fwarn-unused-imports -fwarn-unused-binds -fwarn-name-shadowing -fwarn-redundant-constraints
   build-depends:
-      attoparsec >= 0.13
+      aeson
+    , attoparsec >= 0.13
     , base >=4.7 && <5
+    , containers
     , directory >= 1.3
     , filepath >= 1.4
     , filepattern >= 0.1
+    , hie-bios >=0.5 && <0.6
+    , hslogger
     , text >= 1.2
     , transformers >= 0.5
+    , process
     , yaml >= 0.5
   default-language: Haskell2010
 
 executable gen-hie
+  import: cabal-helper
   main-is: Main.hs
   other-modules:
       Paths_implicit_hie
@@ -66,12 +86,14 @@ executable gen-hie
     , filepath
     , filepattern
     , implicit-hie
+    , optparse-applicative
     , text
     , transformers
     , yaml
   default-language: Haskell2010
 
 test-suite implicit-hie-test
+  import: cabal-helper
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
@@ -92,5 +114,29 @@ test-suite implicit-hie-test
     , implicit-hie
     , text
     , transformers
+    , yaml
+  default-language: Haskell2010
+
+test-suite unit-tests
+  import: cabal-helper
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Paths_implicit_hie, TestUtils
+  if flag(cabalHelper)
+    other-modules:
+      CabalHelperSpec
+  hs-source-dirs:
+      test/unit, test/utils
+  ghc-options: -Wall -Wincomplete-record-updates -Wincomplete-uni-patterns -fno-warn-unused-imports -fno-warn-unused-binds -fno-warn-name-shadowing -fwarn-redundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      aeson
+    , base
+    , directory
+    , filepath
+    , hie-bios
+    , hspec
+    , implicit-hie
+    , text
     , yaml
   default-language: Haskell2010

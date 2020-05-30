@@ -23,3 +23,7 @@ tags
 TAGS
 codex.tags
 .vim
+
+
+## test specific ignores
+test/testdata/**/stack.yaml

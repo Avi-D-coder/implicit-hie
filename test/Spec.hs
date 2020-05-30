@@ -49,7 +49,9 @@ spec = do
           "implicit-hie"
           [ Comp Lib "" "src",
             Comp Exe "gen-hie" "app/Main.hs",
-            Comp Test "implicit-hie-test" "test"
+            Comp Test "implicit-hie-test" "test",
+            Comp Test "unit-tests" "test/unit",
+            Comp Test "unit-tests" "test/utils"
           ]
   describe "Should Succeed"
     $ it

@@ -8,3 +8,9 @@ cradle:
 
     - path: "test"
       component: "implicit-hie:test:implicit-hie-test"
+
+    - path: test/utils
+      component: "implicit-hie:test:unit-tests"
+      
+    - path: test/unit
+      component: "implicit-hie:test:unit-tests"
