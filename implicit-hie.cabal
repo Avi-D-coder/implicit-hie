@@ -4,7 +4,7 @@ cabal-version: 2.0
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 18f92037a7863d121ac45e847f7dc6177adf0ebc7951dfa1588340f86e64456b
+-- hash: b2b829a658e33ea328c725dea732391089d03ffd2a216d413a75d88aefa7c181
 
 name:           implicit-hie
 version:        0.1.0.0
@@ -18,6 +18,7 @@ maintainer:     avi.the.coder@gmail.com
 copyright:      2020
 license:        BSD3
 license-file:   LICENSE
+tested-with:    GHC==8.8.3
 build-type:     Simple
 extra-source-files:
     README.md
