@@ -11,10 +11,15 @@ module Hie.CabalHelper
     findCabalHelperEntryPoint,
     isCabalProject,
     isStackProject,
+    initialiseEnvironment,
+    loadAllUnits,
+    toHieYaml,
+    loadPackages,
   )
 where
 
 import Control.Exception
+import Control.Monad (forM)
 import Data.Foldable (toList)
 import Data.Function ((&))
 import Data.List (find, intercalate, isPrefixOf, sortOn)
@@ -23,8 +28,11 @@ import Data.List.NonEmpty (NonEmpty)
 import qualified Data.Map as Map
 import Data.Maybe (isJust, listToMaybe, mapMaybe)
 import Data.Ord (Down (..))
+import qualified Data.Text as T
 import Distribution.Helper
   ( ChComponentInfo (..),
+    ChComponentName (..),
+    ChLibraryName(..),
     ChEntrypoint (..),
     Ex (..),
     Package,
@@ -47,7 +55,8 @@ import HIE.Bios as Bios
 import HIE.Bios.Types (CradleAction (..))
 import qualified HIE.Bios.Types as Bios
 import Hie.Logger
-import System.Directory (canonicalizePath, findExecutable, getCurrentDirectory)
+import qualified Hie.Cabal.Parser as CP
+import System.Directory (canonicalizePath, findExecutable, getCurrentDirectory, makeRelativeToCurrentDirectory)
 import System.Exit
 import System.FilePath
 
@@ -393,9 +402,7 @@ cabalHelperCradle file = do
       -- Create a suffix for the cradle name.
       -- Purpose is mainly for easier debugging.
       let actionNameSuffix = projectType proj
-      debugm $ "Cabal-Helper dirs: " ++ show [root, file]
-      let dist_dir = getDefaultDistDir proj
-      env <- mkQueryEnv proj dist_dir
+      env <- initialiseEnvironment proj
       return
         Cradle
           { cradleRootDir = root,
@@ -595,6 +602,65 @@ getComponent proj env unitCandidates fp = getComponent' [] [] unitCandidates
       [ "",
         show e
       ]
+
+-- ----------------------------------------------------------------------------
+
+loadPackages :: QueryEnv pt -> IO [Package pt]
+loadPackages = fmap toList . runQuery projectPackages
+
+-- | Eagerly load all given units.
+loadAllUnits :: QueryEnv pt -> [Unit pt] -> IO ([UnitInfo], [(Unit pt, IOException)])
+loadAllUnits env units =
+  loadAllUnits' env [] [] units
+
+loadAllUnits' :: QueryEnv pt -> [UnitInfo] -> [(Unit pt, IOException)] -> [Unit pt] -> IO ([UnitInfo], [(Unit pt, IOException)])
+loadAllUnits' _ triedUnits failedUnits [] = return (triedUnits, failedUnits)
+loadAllUnits' env triedUnits failedUnits (unit : units) =
+  try (runQuery (unitInfo unit) env) >>= \case
+    Left (e :: IOException) -> do
+      warningm $ "Catching and swallowing an IOException: " ++ show e
+      loadAllUnits' env triedUnits ((unit, e) : failedUnits) units
+    Right ui -> do
+      debugm $ "Unit Info: " ++ show ui
+      loadAllUnits' env (ui : triedUnits) failedUnits units
+
+initialiseEnvironment :: ProjLoc pt -> IO (QueryEnv pt)
+initialiseEnvironment proj = do
+  -- Create a suffix for the cradle name.
+  -- Purpose is mainly for easier debugging.
+  let dist_dir = getDefaultDistDir proj
+  mkQueryEnv proj dist_dir
+
+toHieYaml :: QueryEnv pt -> [Package pt] -> IO [CP.Package]
+toHieYaml env packages = forM packages $ \package -> do
+  let units = NonEmpty.toList $ pUnits package
+  (unitInfos, _failed) <- loadAllUnits env units
+  let yamlComponents :: [(FilePath, CP.CompType, CP.Name)]
+      yamlComponents = concatMap unitToComp unitInfos
+  finalisePackage (pPackageName package) (pSourceDir package) yamlComponents
+  where
+    finalisePackage :: String -> FilePath -> [(FilePath, CP.CompType, CP.Name)] -> IO CP.Package
+    finalisePackage pName pRoot yamlUnits = do
+      pRoot' <- makeRelativeToCurrentDirectory pRoot
+      let yamlUnits' = map (\(fp, compType, name) -> CP.Comp compType name (T.pack $ addTrailingPathSeparator $ normalise $ pRoot' </> fp)) yamlUnits
+      pure $ CP.Package (T.pack pName ) yamlUnits'
+
+    toCompType :: ChComponentInfo -> [(FilePath, CP.CompType, CP.Name)]
+    toCompType chComp =
+      let comps = case ciComponentName chComp of
+            ChLibName ChMainLibName -> [(CP.Lib, T.pack "")]
+            ChLibName (ChSubLibName name) -> [(CP.Lib, T.pack name)]
+            ChFLibName name -> [(CP.FLib, T.pack name)]
+            ChExeName name -> [(CP.Exe, T.pack name)]
+            ChTestName name -> [(CP.Test, T.pack name)]
+            ChBenchName name -> [(CP.Bench, T.pack name)]
+            ChSetupHsName -> [] -- TODO: this could be a none cradle
+       in (\path (compType, name) -> (path, compType, name)) <$> ciSourceDirs chComp <*> comps
+
+    unitToComp :: UnitInfo -> [(FilePath, CP.CompType, CP.Name)]
+    unitToComp info = concatMap toCompType (Map.elems $ uiComponents info)
+
+-- ----------------------------------------------------------------------------
 
 -- | Check whether the given FilePath is part of the Component.
 -- A FilePath is part of the Component if and only if:

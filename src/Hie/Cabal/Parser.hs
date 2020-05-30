@@ -20,7 +20,7 @@ type Indent = Int
 data Package = Package Name [Component]
   deriving (Show, Eq, Ord)
 
-data CompType = Lib | Exe | Test | Bench
+data CompType = Lib | Exe | Test | Bench | FLib
   deriving (Show, Eq, Ord)
 
 data Component

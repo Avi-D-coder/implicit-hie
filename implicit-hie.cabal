@@ -82,6 +82,7 @@ executable gen-hie
   build-depends:
       attoparsec
     , base >=4.7 && <5
+    , cabal-helper
     , directory
     , filepath
     , filepattern
