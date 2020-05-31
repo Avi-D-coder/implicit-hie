@@ -23,6 +23,11 @@ build-type:     Simple
 extra-source-files:
     README.md
     ChangeLog.md
+    test/benchSection
+    test/cabal.project
+    test/hie.yaml.cbl
+    test/stackHie.yaml
+    test/haskell-language-server-cabal
 
 source-repository head
   type: git
