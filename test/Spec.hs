@@ -86,6 +86,10 @@ spec = do
     $ it "quoted list"
     $ ("\"one\"\n two\n three3" :: Text) ~> parseList 1
       `shouldParse` ["one", "two", "three3"]
+  describe "Should Succeed"
+    $ it "list with leading commas"
+    $ ("one\n , two\n , three3" :: Text) ~> parseList 1
+      `shouldParse` ["one", "two", "three3"]
 
 exeSection :: Text
 exeSection =
