@@ -26,12 +26,12 @@ main = do
             | any (("cabal.project" ==) . takeFileName) files -> "cabal"
             | any (("stack.yaml" ==) . takeFileName) files -> "stack"
             | otherwise -> "cabal"
-  cfs <- runMaybeT $ case name of
+  pkgs <- fmap (fromMaybe []) $ runMaybeT $ case name of
     "cabal" -> cabalPkgs pwd
-    _ -> stackYamlPkgs pwd
-  when (null cfs) $ error $
+    --_ -> stackYamlPkgs pwd
+  when (null pkgs) $ error $
     "No .cabal files found under"
       <> pwd
       <> "\n You may need to run stack build."
-  pkgs <- catMaybes <$> mapM (nestedPkg pwd) (concat cfs)
+  --pkgs <- catMaybes <$> mapM (nestedPkg pwd) (concat cfs)
   putStr <$> hieYaml name $ fmtPkgs name pkgs
