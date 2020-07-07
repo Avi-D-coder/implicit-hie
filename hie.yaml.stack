@@ -1,0 +1,12 @@
+# Rename this file to hie.yaml to open this project in HIE and use Stack as build system
+
+cradle:
+  stack:
+    - path: "./src"
+      component: "implicit-hie:lib"
+
+    - path: "./app/Main.hs"
+      component: "implicit-hie:exe:gen-hie"
+
+    - path: "./test"
+      component: "implicit-hie:test:implicit-hie-test"
