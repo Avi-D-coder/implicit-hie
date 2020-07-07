@@ -15,17 +15,12 @@ import Hie.Yaml
 import System.Directory
 import System.Directory.Internal
 import System.FilePath.Posix
+import System.Environment
 
 main :: IO ()
 main = do
   pwd <- getCurrentDirectory
-  files <- listDirectory pwd
-  let name =
-        if  | any (("dist-newstyle" ==) . takeFileName) files -> "cabal"
-            | any ((".stack-work" ==) . takeFileName) files -> "stack"
-            | any (("cabal.project" ==) . takeFileName) files -> "cabal"
-            | any (("stack.yaml" ==) . takeFileName) files -> "stack"
-            | otherwise -> "cabal"
+  name <- resolveName pwd
   cfs <- runMaybeT $ case name of
     "cabal" -> cabalPkgs pwd
     _ -> stackYamlPkgs pwd
@@ -35,3 +30,19 @@ main = do
       <> "\n You may need to run stack build."
   pkgs <- catMaybes <$> mapM (nestedPkg pwd) (concat cfs)
   putStr <$> hieYaml name $ fmtPkgs name pkgs
+
+resolveName :: FilePath -> IO String
+resolveName pwd = do
+  args <- getArgs
+  files <- listDirectory pwd
+  let fileNames = map takeFileName files
+      name =
+        if  | "--cabal" `elem` args -> "cabal"
+            | "--stack" `elem` args -> "stack"
+            | "dist-newstyle" `elem` fileNames -> "cabal"
+            | ".stack-work" `elem` fileNames -> "stack"
+            | "cabal.project" `elem` fileNames -> "cabal"
+            | "stack.yaml" `elem` fileNames -> "stack"
+            | otherwise -> "cabal"
+  return name
+
