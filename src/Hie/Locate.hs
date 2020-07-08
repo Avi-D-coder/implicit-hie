@@ -31,7 +31,7 @@ newtype Pkgs = Pkgs [FilePath]
   deriving (Eq, Ord)
 
 instance FromJSON Pkgs where
-  parseJSON (Object v) = Pkgs <$> v .: "packages"
+  parseJSON (Object v) = Pkgs <$> v .:? "packages" .!= ["."]
   parseJSON _ = fail "could not read packages from stack.yaml"
 
 stackYamlPkgs :: FilePath -> MaybeT IO [FilePath]
