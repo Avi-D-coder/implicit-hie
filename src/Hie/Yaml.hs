@@ -52,7 +52,9 @@ fmtComponent (p, c) =
 
 -- | Same as init but handle empty list without throwing errors.
 dropLast :: [a] -> [a]
-dropLast l = take (length l - 1) l
+dropLast xs
+    | null xs   = []
+    | otherwise = init xs
 
 fmtPkgs :: String -> [Package] -> String
 fmtPkgs sOrC pkgs = dropLast $ unlines l
