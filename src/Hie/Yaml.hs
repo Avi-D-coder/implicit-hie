@@ -50,7 +50,7 @@ fmtComponent (p, c) =
     <> "component: "
     <> dQuote c
 
--- Same as init but handle empty list without throwing errors.
+-- | Same as init but handle empty list without throwing errors.
 dropLast :: [a] -> [a]
 dropLast l = take (length l - 1) l
 
