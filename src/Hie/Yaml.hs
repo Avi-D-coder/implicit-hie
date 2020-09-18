@@ -50,11 +50,8 @@ fmtComponent (p, c) =
     <> "component: "
     <> dQuote c
 
-dropLast :: [a] -> [a]
-dropLast l = take (length l - 1) l
-
 fmtPkgs :: String -> [Package] -> String
-fmtPkgs sOrC pkgs = dropLast $ unlines l
+fmtPkgs sOrC pkgs = init $ unlines l
   where
     comp = if sOrC == "cabal" then cabalComponent else stackComponent
     f (Package n cs) = map ((<> "\n") . fmtComponent . comp n) cs
