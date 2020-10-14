@@ -121,9 +121,10 @@ pathMain i p m o a =
     <|> (skipBlockLine i >> pathMain i p m o a)
     <|> pure
       ( map (<//> m) p
-          <> [ p' <//> (o' <> ".hs")
+          <> [ p' <//> (o'' <> ".hs")
                | p' <- p,
-                 o' <- filter (`notElem` a) o
+                 o' <- filter (`notElem` a) o,
+                 let o'' = T.replace "." "/" o'
              ]
       )
 
