@@ -90,6 +90,13 @@ spec = do
     $ it "list with leading commas"
     $ ("one\n , two\n , three3" :: Text) ~> parseList 1
       `shouldParse` ["one", "two", "three3"]
+  describe "Should Succeed"
+    $ it "succesfully parses exe component with other-modules containing dots"
+    $ exeSection2 ~> parseExe 0 
+      `shouldParse` [ Comp Exe "gen-hie" "app/Main.hs"
+                    , Comp Exe "gen-hie" "app/Hie/Executable/Helper.hs"
+                    , Comp Exe "gen-hie" "app/Hie/Executable/Utils.hs"
+                    ]
 
 exeSection :: Text
 exeSection =
@@ -175,3 +182,13 @@ libSection3 =
   \  , text\n\
   \  default-language: Haskell2010\n\
   \"
+
+exeSection2 :: Text
+exeSection2 =
+  "executable gen-hie\n\
+  \  other-modules:\n\
+  \    Hie.Executable.Helper\n\
+  \    Hie.Executable.Utils\n\
+  \  hs-source-dirs:\n\
+  \      app\n\
+  \  main-is: Main.hs \n"
