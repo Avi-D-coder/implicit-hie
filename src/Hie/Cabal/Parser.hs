@@ -102,8 +102,9 @@ optSkipToNextLine i = do
   skipMany $ satisfy (\c -> isSpace c && not (isEndOfLine c))
   mChar <- peekChar
   case mChar of
-    Just c | isEndOfLine c ->
-      char c *> indent i $> ()
+    Just c
+      | isEndOfLine c ->
+        char c *> indent i $> ()
     _ -> pure ()
 
 -- | Comma or space separated list, with optional new lines.

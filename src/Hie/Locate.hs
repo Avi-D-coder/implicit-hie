@@ -8,9 +8,7 @@ module Hie.Locate
   )
 where
 
-import Control.Applicative
 import Control.Exception
-import Control.Monad
 import Control.Monad.IO.Class
 import Control.Monad.Trans.Maybe
 import Data.Attoparsec.Text (parseOnly)
@@ -20,9 +18,7 @@ import Data.Maybe
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import Data.Yaml
-import GHC.Generics
 import Hie.Cabal.Parser
-import Hie.Yaml
 import System.Directory
 import System.FilePath.Posix
 import System.FilePattern.Directory (getDirectoryFiles)
@@ -35,22 +31,24 @@ instance FromJSON Pkgs where
   parseJSON _ = fail "could not read packages from stack.yaml"
 
 stackYamlPkgs :: FilePath -> MaybeT IO [FilePath]
-stackYamlPkgs p = liftIO $
-  decodeFileEither (p </> "stack.yaml") >>= \case
-    Right (Pkgs f) ->
-      liftIO $
-        map (p </>)
-          <$> getDirectoryFiles p (map (</> "*.cabal") f)
-    Left e -> fail $ show e
+stackYamlPkgs p =
+  liftIO $
+    decodeFileEither (p </> "stack.yaml") >>= \case
+      Right (Pkgs f) ->
+        liftIO $
+          map (p </>)
+            <$> getDirectoryFiles p (map (</> "*.cabal") f)
+      Left e -> fail $ show e
 
 cabalPkgs :: FilePath -> MaybeT IO [FilePath]
 cabalPkgs p = do
   cp <- cabalP "cabal.project"
   cl <- cabalP "cabal.project.local"
   case concat . rights $ map (parseOnly extractPkgs) $ rights [cp, cl] of
-    [] -> liftIO (cfs p) >>= \case
-      [] -> fail "no cabal files found"
-      h : _ -> pure [p </> h]
+    [] ->
+      liftIO (cfs p) >>= \case
+        [] -> fail "no cabal files found"
+        h : _ -> pure [p </> h]
     xs -> do
       cd <- liftIO $ map (p </>) <$> getDirectoryFiles p (map (matchDirs . T.unpack) xs)
       cf <-
@@ -71,9 +69,10 @@ nestedPkg parrent child = do
   case parsePackage' f' of
     Right (Package n cs) -> do
       let dir =
-            fromJust $ stripPrefix (splitDirectories parrent)
-              $ splitDirectories
-              $ fst (splitFileName child)
+            fromJust $
+              stripPrefix (splitDirectories parrent) $
+                splitDirectories $
+                  fst (splitFileName child)
           pkg =
             Package n $
               map

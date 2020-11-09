@@ -1,7 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 import Data.Attoparsec.Text
-import qualified Data.Text as T
 import Data.Text (Text)
 import qualified Data.Text.IO as T
 import Hie.Cabal.Parser
@@ -14,89 +13,89 @@ main = hspec spec
 
 spec :: Spec
 spec = do
-  describe "Should Succeed"
-    $ it "successfully parses executable section"
-    $ exeSection ~> parseExe 0
-      `shouldParse` [Comp Exe "gen-hie" "app/Main.hs"]
-  describe "Should Succeed"
-    $ it "successfully parses test section"
-    $ testSection ~> parseTestSuite 0
-      `shouldParse` [Comp Test "implicit-hie-test" "test"]
-  describe "Should Succeed"
-    $ it "successfully parses library section"
-    $ libSection ~> parseLib 0
-      `shouldParse` [Comp Lib "" "src"]
-  describe "Should Succeed"
-    $ it "successfully parses library section with 2 hs-source-dirs"
-    $ libSection2 ~> parseLib 0
-      `shouldParse` [Comp Lib "" "src", Comp Lib "" "src2"]
-  describe "Should Succeed"
-    $ it "successfully parses library section with 2 paths under hs-source-dirs"
-    $ libSection3 ~> parseLib 0
-      `shouldParse` [Comp Lib "" "src", Comp Lib "" "src2"]
-  describe "Should Succeed"
-    $ it "successfully parses bench section"
-    $ do
-      bs <- T.readFile "test/benchSection"
-      bs ~> parseBench 0
-        `shouldParse` [Comp Bench "folds" "benchmarks/folds.hs"]
-  describe "Should Succeed"
-    $ it "successfully parses package"
-    $ do
-      cf <- T.readFile "implicit-hie.cabal"
-      cf ~> parsePackage
-        `shouldParse` Package
-          "implicit-hie"
-          [ Comp Lib "" "src",
-            Comp Exe "gen-hie" "app/Main.hs",
-            Comp Test "implicit-hie-test" "test"
-          ]
-  describe "Should Succeed"
-    $ it
+  describe "Should Succeed" $
+    it "successfully parses executable section" $
+      exeSection ~> parseExe 0
+        `shouldParse` [Comp Exe "gen-hie" "app/Main.hs"]
+  describe "Should Succeed" $
+    it "successfully parses test section" $
+      testSection ~> parseTestSuite 0
+        `shouldParse` [Comp Test "implicit-hie-test" "test"]
+  describe "Should Succeed" $
+    it "successfully parses library section" $
+      libSection ~> parseLib 0
+        `shouldParse` [Comp Lib "" "src"]
+  describe "Should Succeed" $
+    it "successfully parses library section with 2 hs-source-dirs" $
+      libSection2 ~> parseLib 0
+        `shouldParse` [Comp Lib "" "src", Comp Lib "" "src2"]
+  describe "Should Succeed" $
+    it "successfully parses library section with 2 paths under hs-source-dirs" $
+      libSection3 ~> parseLib 0
+        `shouldParse` [Comp Lib "" "src", Comp Lib "" "src2"]
+  describe "Should Succeed" $
+    it "successfully parses bench section" $
+      do
+        bs <- T.readFile "test/benchSection"
+        bs ~> parseBench 0
+          `shouldParse` [Comp Bench "folds" "benchmarks/folds.hs"]
+  describe "Should Succeed" $
+    it "successfully parses package" $
+      do
+        cf <- T.readFile "implicit-hie.cabal"
+        cf ~> parsePackage
+          `shouldParse` Package
+            "implicit-hie"
+            [ Comp Lib "" "src",
+              Comp Exe "gen-hie" "app/Main.hs",
+              Comp Test "implicit-hie-test" "test"
+            ]
+  describe "Should Succeed" $
+    it
       "skips to end of block section"
-    $ let r = "test\n"
-       in (libSection <> r) ~?> parseLib 0
-            `leavesUnconsumed` r
-  describe "Should Succeed"
-    $ it "successfully generates stack hie.yaml"
-    $ do
-      sf <- readFile "test/stackHie.yaml"
-      cf <- T.readFile "implicit-hie.cabal"
-      (hieYaml "stack" . fmtPkgs "stack" . (: []) <$> parseOnly parsePackage cf)
-        `shouldBe` Right sf
-  describe "Should Succeed"
-    $ it "successfully generates cabal hie.yaml for haskell-language-server"
-    $ do
-      f <- T.readFile "test/haskell-language-server-cabal"
-      o <- readFile "test/hie.yaml.cbl"
-      (hieYaml "cabal" . fmtPkgs "cabal" . (: []) <$> parseOnly parsePackage f)
-        `shouldBe` Right o
-  describe "Should Succeed"
-    $ it "successfully parses comma list"
-    $ ("one, two" :: Text) ~> parseList 1 `shouldParse` ["one", "two"]
-  describe "Should Succeed"
-    $ it "successfully parses newline list"
-    $ ("one\n two \n three3" :: Text) ~> parseList 1
-      `shouldParse` ["one", "two", "three3"]
-  describe "Should Succeed"
-    $ it "successfully parses newline comma list"
-    $ ("one\n two,  three3" :: Text) ~> parseList 1
-      `shouldParse` ["one", "two", "three3"]
-  describe "Should Succeed"
-    $ it "quoted list"
-    $ ("\"one\"\n two\n three3" :: Text) ~> parseList 1
-      `shouldParse` ["one", "two", "three3"]
-  describe "Should Succeed"
-    $ it "list with leading commas"
-    $ ("one\n , two\n , three3" :: Text) ~> parseList 1
-      `shouldParse` ["one", "two", "three3"]
-  describe "Should Succeed"
-    $ it "succesfully parses exe component with other-modules containing dots"
-    $ exeSection2 ~> parseExe 0 
-      `shouldParse` [ Comp Exe "gen-hie" "app/Main.hs"
-                    , Comp Exe "gen-hie" "app/Hie/Executable/Helper.hs"
-                    , Comp Exe "gen-hie" "app/Hie/Executable/Utils.hs"
-                    ]
+      $ let r = "test\n"
+         in (libSection <> r) ~?> parseLib 0
+              `leavesUnconsumed` r
+  describe "Should Succeed" $
+    it "successfully generates stack hie.yaml" $
+      do
+        sf <- readFile "test/stackHie.yaml"
+        cf <- T.readFile "implicit-hie.cabal"
+        (hieYaml "stack" . fmtPkgs "stack" . (: []) <$> parseOnly parsePackage cf)
+          `shouldBe` Right sf
+  describe "Should Succeed" $
+    it "successfully generates cabal hie.yaml for haskell-language-server" $
+      do
+        f <- T.readFile "test/haskell-language-server-cabal"
+        o <- readFile "test/hie.yaml.cbl"
+        (hieYaml "cabal" . fmtPkgs "cabal" . (: []) <$> parseOnly parsePackage f)
+          `shouldBe` Right o
+  describe "Should Succeed" $
+    it "successfully parses comma list" $
+      ("one, two" :: Text) ~> parseList 1 `shouldParse` ["one", "two"]
+  describe "Should Succeed" $
+    it "successfully parses newline list" $
+      ("one\n two \n three3" :: Text) ~> parseList 1
+        `shouldParse` ["one", "two", "three3"]
+  describe "Should Succeed" $
+    it "successfully parses newline comma list" $
+      ("one\n two,  three3" :: Text) ~> parseList 1
+        `shouldParse` ["one", "two", "three3"]
+  describe "Should Succeed" $
+    it "quoted list" $
+      ("\"one\"\n two\n three3" :: Text) ~> parseList 1
+        `shouldParse` ["one", "two", "three3"]
+  describe "Should Succeed" $
+    it "list with leading commas" $
+      ("one\n , two\n , three3" :: Text) ~> parseList 1
+        `shouldParse` ["one", "two", "three3"]
+  describe "Should Succeed" $
+    it "succesfully parses exe component with other-modules containing dots" $
+      exeSection2 ~> parseExe 0
+        `shouldParse` [ Comp Exe "gen-hie" "app/Main.hs",
+                        Comp Exe "gen-hie" "app/Hie/Executable/Helper.hs",
+                        Comp Exe "gen-hie" "app/Hie/Executable/Utils.hs"
+                      ]
 
 exeSection :: Text
 exeSection =
