@@ -48,6 +48,7 @@ library
     -Wall -Wincomplete-record-updates -Wincomplete-uni-patterns
     -fno-warn-unused-imports -fno-warn-unused-binds
     -fno-warn-name-shadowing -fwarn-redundant-constraints
+    -fwrite-ide-info -hiedir=.hie
 
   build-depends:
       attoparsec    >=0.13
@@ -70,7 +71,7 @@ executable gen-hie
     -Wall -Wincomplete-record-updates -Wincomplete-uni-patterns
     -fno-warn-unused-imports -fno-warn-unused-binds
     -fno-warn-name-shadowing -fwarn-redundant-constraints -threaded
-    -rtsopts -with-rtsopts=-N
+    -rtsopts -with-rtsopts=-N -fwrite-ide-info -hiedir=.hie
 
   build-depends:
       attoparsec
@@ -95,7 +96,7 @@ test-suite implicit-hie-test
     -Wall -Wincomplete-record-updates -Wincomplete-uni-patterns
     -fno-warn-unused-imports -fno-warn-unused-binds
     -fno-warn-name-shadowing -fwarn-redundant-constraints -threaded
-    -rtsopts -with-rtsopts=-N
+    -rtsopts -with-rtsopts=-N -fwrite-ide-info -hiedir=.hie
 
   build-depends:
       attoparsec
