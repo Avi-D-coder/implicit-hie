@@ -1,3 +1,4 @@
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 module Hie.Cabal.Parser where
@@ -93,25 +94,23 @@ parseString = parseQuoted <|> unqualName
 unqualName :: Parser Text
 unqualName = takeWhile1 (not . (\c -> isSpace c || c == ','))
 
--- | Skip spaces and if enf of line is reached, skip it as well and require that
+-- | Skip spaces and if end of line is reached, skip it as well and require that
 -- next one starts with indent.
 --
 -- Used for parsing fields.
 optSkipToNextLine :: Indent -> Parser ()
 optSkipToNextLine i = do
   skipMany $ satisfy (\c -> isSpace c && not (isEndOfLine c))
-  mChar <- peekChar
-  case mChar of
+  skipMany $ skipSpace >> "--" >> takeTill isEndOfLine
+  peekChar >>= \case
     Just c
       | isEndOfLine c ->
-        char c *> indent i $> ()
+        endOfLine *> indent i $> ()
     _ -> pure ()
 
 -- | Comma or space separated list, with optional new lines.
 parseList :: Indent -> Parser [Text]
-parseList i = items <|> (emptyOrComLine >> indent i >> items)
-  where
-    items = sepBy parseString (optSkipToNextLine i *> skipMany (char ',') *> optSkipToNextLine i)
+parseList i = sepBy parseString (optSkipToNextLine i *> skipMany (char ',') *> optSkipToNextLine i)
 
 pathMain :: Indent -> [Text] -> Text -> [Text] -> [Text] -> Parser [Text]
 pathMain i p m o a =

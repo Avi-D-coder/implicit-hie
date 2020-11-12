@@ -90,6 +90,26 @@ spec = do
       ("one\n , two\n , three3" :: Text) ~> parseList 1
         `shouldParse` ["one", "two", "three3"]
   describe "Should Succeed" $
+    it "list with a comment" $
+      ("foo\n  -- need to include this too\n  bar\n" :: Text) ~> parseList 1
+        `shouldParse` ["foo", "bar"]
+  describe "Should Succeed" $
+    it "list with a comment" $
+      ("foo  -- need to include this too\n  bar\n" :: Text) ~> parseList 1
+        `shouldParse` ["foo", "bar"]
+  describe "Should Succeed" $
+    it "list with a comment" $
+      ("foo  -- need to include this too\n  bar" :: Text) ~> parseList 1
+        `shouldParse` ["foo", "bar"]
+  describe "Should Succeed" $
+    it "list with a comment" $
+      ("foo\n bar\n  -- need to include this too" :: Text) ~> parseList 1
+        `shouldParse` ["foo", "bar"]
+  describe "Should Succeed" $
+    it "list with a comment" $
+      ("foo\n bar -- need to include this too" :: Text) ~> parseList 1
+        `shouldParse` ["foo", "bar"]
+  describe "Should Succeed" $
     it "succesfully parses exe component with other-modules containing dots" $
       exeSection2 ~> parseExe 0
         `shouldParse` [ Comp Exe "gen-hie" "app/Main.hs",
