@@ -20,7 +20,8 @@ main = do
     _ -> stackYamlPkgs pwd
   when (null cfs) $
     error $
-      "No .cabal files found under"
+      "Used" <> name
+        <> "\n No .cabal files found under"
         <> pwd
         <> "\n You may need to run stack build."
   pkgs <- catMaybes <$> mapM (nestedPkg pwd) (concat cfs)
