@@ -105,12 +105,12 @@ optSkipToNextLine i = do
   peekChar >>= \case
     Just c
       | isEndOfLine c ->
-        endOfLine *> indent i $> ()
+        endOfLine >> indent i $> ()
     _ -> pure ()
 
 -- | Comma or space separated list, with optional new lines.
 parseList :: Indent -> Parser [Text]
-parseList i = sepBy parseString (optSkipToNextLine i *> skipMany (char ',') *> optSkipToNextLine i)
+parseList i = sepBy parseString (optSkipToNextLine i >> skipMany (char ',') >> optSkipToNextLine i) <|> pure []
 
 pathMain :: Indent -> [Text] -> Text -> [Text] -> [Text] -> Parser [Text]
 pathMain i p m o a =

@@ -116,6 +116,14 @@ spec = do
                         Comp Exe "gen-hie" "app/Hie/Executable/Helper.hs",
                         Comp Exe "gen-hie" "app/Hie/Executable/Utils.hs"
                       ]
+  describe "Should Succeed" $
+    it "succesfully parses single other-modules" $
+      ("other-modules: test\ndefault-language:   Haskell2011" :: Text) ~?> field 0 "other-modules" parseList
+        `leavesUnconsumed` "default-language:   Haskell2011"
+  describe "Should Succeed" $
+    it "succesfully parses empty other-modules" $
+      ("other-modules: test\ndefault-language:   Haskell2011" :: Text) ~?> field 0 "other-modules" parseList
+        `leavesUnconsumed` "default-language:   Haskell2011"
 
 exeSection :: Text
 exeSection =
