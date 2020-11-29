@@ -94,19 +94,19 @@ spec = do
       ("foo\n  -- need to include this too\n  bar\n" :: Text) ~> parseList 1
         `shouldParse` ["foo", "bar"]
   describe "Should Succeed" $
-    it "list with a comment" $
+    it "list2 with a comment" $
       ("foo  -- need to include this too\n  bar\n" :: Text) ~> parseList 1
         `shouldParse` ["foo", "bar"]
   describe "Should Succeed" $
-    it "list with a comment" $
+    it "list3 with a comment" $
       ("foo  -- need to include this too\n  bar" :: Text) ~> parseList 1
         `shouldParse` ["foo", "bar"]
   describe "Should Succeed" $
-    it "list with a comment" $
+    it "list4 with a comment" $
       ("foo\n bar\n  -- need to include this too" :: Text) ~> parseList 1
         `shouldParse` ["foo", "bar"]
   describe "Should Succeed" $
-    it "list with a comment" $
+    it "list5 with a comment" $
       ("foo\n bar -- need to include this too" :: Text) ~> parseList 1
         `shouldParse` ["foo", "bar"]
   describe "Should Succeed" $
@@ -121,9 +121,13 @@ spec = do
       ("other-modules: test\ndefault-language:   Haskell2011" :: Text) ~?> field 0 "other-modules" parseList
         `leavesUnconsumed` "default-language:   Haskell2011"
   describe "Should Succeed" $
-    it "succesfully parses empty other-modules" $
+    it "succesfully parses empty other-modules1" $
       ("other-modules: test\ndefault-language:   Haskell2011" :: Text) ~?> field 0 "other-modules" parseList
         `leavesUnconsumed` "default-language:   Haskell2011"
+  describe "Should Succeed" $
+    it "succesfully parses empty other-modules2" $
+      ("    other-modules: \n    build-depends:\n        base >=4.9 && <5" :: Text) ~> field 0 "other-modules" parseList
+        `shouldParse` []
 
 exeSection :: Text
 exeSection =
