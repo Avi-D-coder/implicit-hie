@@ -7,7 +7,7 @@ cabal-version:      2.0
 -- hash: b2b829a658e33ea328c725dea732391089d03ffd2a216d413a75d88aefa7c181
 
 name:               implicit-hie
-version:            0.1.2.4
+version:            0.1.2.5
 description:
   Auto generate a stack or cabal multi component hie.yaml file
 
