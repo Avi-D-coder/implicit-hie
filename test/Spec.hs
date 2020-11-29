@@ -166,12 +166,12 @@ libSection =
   \  exposed-modules:\n\
   \  Lib\n\
   \  other-modules:\n\
-  \  Paths_implicit_hie\n\
+  \    Paths_implicit_hie\n\
   \  hs-source-dirs:\n\
-  \  src\n\
+  \    src\n\
   \  ghc-options: -fspecialize-aggressively -Wall -Wincomplete-record-updates -Wincomplete-uni-patterns -fno-warn-unused-imports -fno-warn-unused-binds -fno-warn-name-shadowing -fwarn-redundant-constraints\n\
   \  build-depends:\n\
-  \  attoparsec\n\
+  \    attoparsec\n\
   \  , base >=4.7 && <5\n\
   \  , text\n\
   \  default-language: Haskell2010\n\

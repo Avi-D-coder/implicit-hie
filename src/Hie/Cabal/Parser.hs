@@ -94,23 +94,28 @@ parseString = parseQuoted <|> unqualName
 unqualName :: Parser Text
 unqualName = takeWhile1 (not . (\c -> isSpace c || c == ','))
 
--- | Skip spaces and if end of line is reached, skip it as well and require that
--- next one starts with indent.
---
--- Used for parsing fields.
-optSkipToNextLine :: Indent -> Parser ()
-optSkipToNextLine i = do
-  skipMany $ satisfy (\c -> isSpace c && not (isEndOfLine c))
-  skipMany $ skipSpace >> "--" >> takeTill isEndOfLine
-  peekChar >>= \case
-    Just c
-      | isEndOfLine c ->
-        endOfLine >> indent i $> ()
-    _ -> pure ()
-
 -- | Comma or space separated list, with optional new lines.
 parseList :: Indent -> Parser [Text]
-parseList i = sepBy parseString (optSkipToNextLine i >> skipMany (char ',') >> optSkipToNextLine i) <|> pure []
+parseList i = many (nl <|> sl)
+  where
+    sep = skipMany (char ',' <|> tabOrSpace)
+    com = skipMany tabOrSpace >> "--" >> skipWhile (not . isEndOfLine)
+    sl = do
+      sep
+      x <- parseString
+      sep
+      skipMany com
+      pure x
+
+    nl = do
+      skipMany emptyOrComLine <|> endOfLine
+      _ <- indent i
+      sep
+      skipMany com
+      x <- parseString
+      sep
+      skipMany com
+      pure x
 
 pathMain :: Indent -> [Text] -> Text -> [Text] -> [Text] -> Parser [Text]
 pathMain i p m o a =
@@ -153,7 +158,7 @@ skipBlockLine :: Indent -> Parser ()
 skipBlockLine i = (indent i >> skipToNextLine) <|> emptyOrComLine
 
 emptyOrComLine :: Parser ()
-emptyOrComLine = skipMany tabOrSpace >> endOfLine <|> comment
+emptyOrComLine = (skipMany tabOrSpace >> endOfLine) <|> comment
 
 tabOrSpace :: Parser Char
 tabOrSpace = char ' ' <|> char '\t'
@@ -171,9 +176,9 @@ field i f p =
   do
     i' <- indent i
     _ <- asciiCI f
-    skipSpace
+    skipMany tabOrSpace
     _ <- char ':'
-    skipSpace
+    skipMany tabOrSpace
     p' <- p $ i' + 1
     skipToNextLine
     pure p'
