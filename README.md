@@ -65,5 +65,4 @@ If you use more advanced features, the generated config may not be complete.
 - [ ] common stanzas
 
 ### Work, Twitter
-- I'm currently looking for work as a Haskell or Rust developer. I can be reached via email or a twitter message.
 - Follow me on twitter [@AviDessauer](https://twitter.com/AviDessauer).
