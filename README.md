@@ -1,6 +1,7 @@
 # implicit-hie
 ```bash
 cd your-stack-or-cabal-package
+stack install implicit-hie OR cabal install implicit-hie
 gen-hie > hie.yaml
 ```
 `gen-hie` should be run the root of a cabal or stack project.
