@@ -32,13 +32,34 @@ data Component
 parsePackage' :: Text -> Either String Package
 parsePackage' = parseOnly parsePackage
 
+-- Skip over entire fields that are known to be free-form.  Ensures lines that
+-- look like the beginning of sections/stanzas are not inadvertently intepreted
+-- as such.
+-- List gathered by searching "free text field" in:
+-- https://cabal.readthedocs.io/en/3.4/buildinfo-fields-reference.html
+-- May be subject to change across Cabal versions.
+skipFreeformField :: Parser ()
+skipFreeformField =
+  choice $ flip (field 0) skipBlock <$>
+    [ "author"
+    , "bug-reports"
+    , "category"
+    , "copyright"
+    , "description"
+    , "homepage"
+    , "maintainer"
+    , "package-url"
+    , "stability"
+    , "synopsis"
+    ]
+
 parsePackage :: Parser Package
 parsePackage =
   ( do
       n <- field 0 "name" $ const parseString
       (Package _ t) <- parsePackage
       pure $ Package n t
-  )
+  ) <|> (skipFreeformField >> parsePackage)
     <|> ( do
             h <- parseComponent 0
             (Package n t) <- parsePackage
