@@ -40,18 +40,19 @@ parsePackage' = parseOnly parsePackage
 -- May be subject to change across Cabal versions.
 skipFreeformField :: Parser ()
 skipFreeformField =
-  choice $ flip (field 0) skipBlock <$>
-    [ "author"
-    , "bug-reports"
-    , "category"
-    , "copyright"
-    , "description"
-    , "homepage"
-    , "maintainer"
-    , "package-url"
-    , "stability"
-    , "synopsis"
-    ]
+  choice $
+    flip (field 0) skipBlock
+      <$> [ "author",
+            "bug-reports",
+            "category",
+            "copyright",
+            "description",
+            "homepage",
+            "maintainer",
+            "package-url",
+            "stability",
+            "synopsis"
+          ]
 
 parsePackage :: Parser Package
 parsePackage =
@@ -59,7 +60,8 @@ parsePackage =
       n <- field 0 "name" $ const parseString
       (Package _ t) <- parsePackage
       pure $ Package n t
-  ) <|> (skipFreeformField >> parsePackage)
+  )
+    <|> (skipFreeformField >> parsePackage)
     <|> ( do
             h <- parseComponent 0
             (Package n t) <- parsePackage
