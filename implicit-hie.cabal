@@ -62,7 +62,7 @@ library
   default-language: Haskell2010
 
 flag executable
-  descritption: Build the gen-hie executable
+  description: Build the gen-hie executable
   default: True
 
 executable gen-hie
