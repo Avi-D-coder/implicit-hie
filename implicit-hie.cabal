@@ -61,6 +61,10 @@ library
 
   default-language: Haskell2010
 
+flag executable
+  description: Build the gen-hie executable
+  default: True
+
 executable gen-hie
   main-is:          Main.hs
   other-modules:    Paths_implicit_hie
@@ -84,6 +88,9 @@ executable gen-hie
     , yaml
 
   default-language: Haskell2010
+  
+  if !flag(executable)
+    buildable: False
 
 test-suite implicit-hie-test
   type:             exitcode-stdio-1.0
