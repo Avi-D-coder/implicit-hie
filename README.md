@@ -7,6 +7,7 @@ gen-hie > hie.yaml
 `gen-hie` should be run the root of a cabal or stack project.
 The config type (cabal or stack) is determined by the existence of
 `dist-newstyle`, `.stack-work`, `stack.yaml`, if none are found the default is cabal.
+You can use `--cabal`, or `--stack` options to override config type.
 
 # Cabal Multi project example
 ```bash
