@@ -9,7 +9,9 @@ import Hie.Locate
 import Hie.Yaml
 import System.Directory
 import System.Environment
+import System.Exit
 import System.FilePath.Posix
+import System.IO
 
 main :: IO ()
 main = do
@@ -19,7 +21,7 @@ main = do
     "cabal" -> cabalPkgs pwd
     _ -> stackYamlPkgs pwd
   when (null cfs) $
-    error $
+    die $
       "Used" <> name
         <> "\n No .cabal files found under"
         <> pwd
@@ -31,6 +33,12 @@ resolveName :: FilePath -> IO String
 resolveName pwd = do
   args <- getArgs
   files <- listDirectory pwd
+  when ("--help" `elem` args || "-h" `elem` args) $ do
+    progName <- getProgName
+    hPutStrLn stderr $ "Usage: " <> progName <> " [ --cabal | --stack ]\n\n\
+      \If neither argument is given then " <> progName <> " will infer the type by\n\
+      \looking for dist-newstyle, .stack-work, cabal.project and stack.yaml in that order."
+    exitSuccess
   let fileNames = map takeFileName files
       name =
         if
