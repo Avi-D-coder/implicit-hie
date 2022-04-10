@@ -22,7 +22,7 @@ main = do
     _ -> stackYamlPkgs pwd
   when (null cfs) $
     die $
-      "Used" <> name
+      "Used " <> name
         <> "\n No .cabal files found under"
         <> pwd
         <> "\n You may need to run stack build."
