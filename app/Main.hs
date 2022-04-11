@@ -35,9 +35,13 @@ resolveName pwd = do
   files <- listDirectory pwd
   when ("--help" `elem` args || "-h" `elem` args) $ do
     progName <- getProgName
-    hPutStrLn stderr $ "Usage: " <> progName <> " [ --cabal | --stack ]\n\n\
-      \If neither argument is given then " <> progName <> " will infer the type by\n\
-      \looking for dist-newstyle, .stack-work, cabal.project and stack.yaml in that order."
+    hPutStrLn stderr $
+      "Usage: " <> progName
+        <> " [ --cabal | --stack ]\n\n\
+           \If neither argument is given then "
+        <> progName
+        <> " will infer the type by\n\
+           \looking for dist-newstyle, .stack-work, cabal.project and stack.yaml in that order."
     exitSuccess
   let fileNames = map takeFileName files
       name =
