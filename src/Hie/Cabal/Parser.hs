@@ -87,7 +87,9 @@ parseComponent i =
     <|> parseTestSuite i
 
 parseLib :: Indent -> Parser [Component]
-parseLib i = parseSec i "library" $ Comp Lib
+parseLib i =
+  (parseSec i "library" $ Comp Lib)
+    <|> (parseSec i "foreign-library" $ Comp Lib)
 
 parseTestSuite :: Indent -> Parser [Component]
 parseTestSuite i = parseSec i "test-suite" $ Comp Test
