@@ -1,17 +1,46 @@
-{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards   #-}
 
-module Hie.Cabal.Parser where
+module Hie.Cabal.Parser
+( Package(..)
+, Component(..)
+, CompType(..)
+, Name
+, extractPkgs
+, parsePackage'
+) where
 
-import Control.Applicative
-import Control.Monad
-import Data.Attoparsec.Text
-import Data.Char
-import Data.Functor
-import Data.Maybe
-import Data.Text (Text)
-import qualified Data.Text as T
-import System.FilePath.Posix ((</>))
+import           Control.Applicative
+import           Control.Monad
+import           Data.Attoparsec.Text
+import           Data.Char
+import           Data.Foldable                                 (asum)
+import           Data.Maybe                                    (maybeToList, catMaybes)
+import           Data.Text                                     (Text)
+import qualified Data.Text                                     as T
+import           Data.Text.Encoding                            (encodeUtf8)
+import           Distribution.ModuleName                       (ModuleName,
+                                                                toFilePath)
+import           Distribution.Package                          (pkgName,
+                                                                unPackageName)
+import           Distribution.PackageDescription               (Benchmark (benchmarkBuildInfo, benchmarkName),
+                                                                Executable (buildInfo, exeName),
+                                                                ForeignLib (foreignLibBuildInfo, foreignLibName),
+                                                                Library (libBuildInfo, libName),
+                                                                LibraryName (..),
+                                                                benchmarkModules,
+                                                                exeModules,
+                                                                explicitLibModules,
+                                                                foreignLibModules)
+import           Distribution.PackageDescription.Configuration
+import           Distribution.PackageDescription.Parsec
+import           Distribution.Types.BuildInfo
+import           Distribution.Types.PackageDescription
+import           Distribution.Types.TestSuite
+import           Distribution.Types.UnqualComponentName
+import           Distribution.Utils.Path                       (getSymbolicPath)
+import           System.FilePath                               ((</>))
+
 
 type Name = Text
 
@@ -28,83 +57,6 @@ data CompType = Lib | Exe | Test | Bench
 data Component
   = Comp CompType Name Path
   deriving (Show, Eq, Ord)
-
-parsePackage' :: Text -> Either String Package
-parsePackage' = parseOnly parsePackage
-
--- Skip over entire fields that are known to be free-form.  Ensures lines that
--- look like the beginning of sections/stanzas are not inadvertently intepreted
--- as such.
--- List gathered by searching "free text field" in:
--- https://cabal.readthedocs.io/en/3.4/buildinfo-fields-reference.html
--- May be subject to change across Cabal versions.
-skipFreeformField :: Parser ()
-skipFreeformField =
-  choice $
-    flip (field 0) skipBlock
-      <$> [ "author",
-            "bug-reports",
-            "category",
-            "copyright",
-            "description",
-            "homepage",
-            "maintainer",
-            "package-url",
-            "stability",
-            "synopsis"
-          ]
-
-parsePackage :: Parser Package
-parsePackage =
-  ( do
-      n <- field 0 "name" $ const parseString
-      (Package _ t) <- parsePackage
-      pure $ Package n t
-  )
-    <|> (skipFreeformField >> parsePackage)
-    <|> ( do
-            h <- parseComponent 0
-            (Package n t) <- parsePackage
-            pure $ Package n (h <> t)
-        )
-    <|> (skipToNextLine >> parsePackage)
-    <|> pure (Package "" [])
-
-componentHeader :: Indent -> Text -> Parser Name
-componentHeader i t = do
-  _ <- indent i
-  _ <- asciiCI t
-  skipMany tabOrSpace
-  n <- parseString <|> pure ""
-  skipToNextLine
-  pure n
-
-parseComponent :: Indent -> Parser [Component]
-parseComponent i =
-  parseExe i
-    <|> parseLib i
-    <|> parseBench i
-    <|> parseTestSuite i
-
-parseLib :: Indent -> Parser [Component]
-parseLib i =
-  (parseSec i "library" $ Comp Lib)
-    <|> (parseSec i "foreign-library" $ Comp Lib)
-
-parseTestSuite :: Indent -> Parser [Component]
-parseTestSuite i = parseSec i "test-suite" $ Comp Test
-
-parseExe :: Indent -> Parser [Component]
-parseExe = parseSecMain (Comp Exe) "executable"
-
-parseBench :: Indent -> Parser [Component]
-parseBench = parseSecMain (Comp Bench) "benchmark"
-
-parseSecMain :: (Name -> Path -> Component) -> Text -> Indent -> Parser [Component]
-parseSecMain c s i = do
-  n <- componentHeader i s
-  p <- pathMain (i + 1) ["./"] "" [] []
-  pure $ map (c n) p
 
 parseQuoted :: Parser Text
 parseQuoted = do
@@ -142,45 +94,11 @@ parseList i = many (nl <|> sl)
       skipMany com
       pure x
 
-pathMain :: Indent -> [Text] -> Text -> [Text] -> [Text] -> Parser [Text]
-pathMain i p m o a =
-  (hsSourceDir i >>= (\p' -> pathMain i p' m o a))
-    <|> (field i "main-is" (const parseString) >>= (\m' -> pathMain i p m' o a))
-    <|> (field i "other-modules" parseList >>= flip (pathMain i p m) a)
-    <|> (field i "autogen-modules" parseList >>= pathMain i p m o)
-    <|> (skipBlockLine i >> pathMain i p m o a)
-    <|> pure
-      ( map (<//> m) p
-          <> [ p' <//> (o'' <> ".hs")
-               | p' <- p,
-                 o' <- filter (`notElem` a) o,
-                 let o'' = T.replace "." "/" o'
-             ]
-      )
-
-(<//>) :: Text -> Text -> Text
-a <//> b = T.pack (T.unpack a </> T.unpack b)
-
-infixr 5 <//>
-
-parseSec :: Indent -> Text -> (Name -> Path -> Component) -> Parser [Component]
-parseSec i compType compCon = do
-  n <- componentHeader i compType
-  p <- extractPath (i + 1) []
-  let p' = if null p then ["./"] else p
-  pure $ map (compCon n) p'
-
 skipToNextLine :: Parser ()
 skipToNextLine = skipWhile (not . isEndOfLine) >> endOfLine
 
-skipBlock :: Indent -> Parser ()
-skipBlock i = skipMany $ skipBlockLine i
-
 comment :: Parser ()
 comment = skipMany tabOrSpace >> "--" >> skipToNextLine
-
-skipBlockLine :: Indent -> Parser ()
-skipBlockLine i = (indent i >> skipToNextLine) <|> emptyOrComLine
 
 emptyOrComLine :: Parser ()
 emptyOrComLine = (skipMany tabOrSpace >> endOfLine) <|> comment
@@ -188,32 +106,22 @@ emptyOrComLine = (skipMany tabOrSpace >> endOfLine) <|> comment
 tabOrSpace :: Parser Char
 tabOrSpace = char ' ' <|> char '\t'
 
-hsSourceDir :: Indent -> Parser [Text]
-hsSourceDir i = field i "hs-source-dirs" parseList
-
 -- field :: Indent -> Text -> Parser Text
 field ::
   Indent ->
-  Text ->
+  [Text] ->
   (Indent -> Parser a) ->
   Parser a
 field i f p =
   do
     i' <- indent i
-    _ <- asciiCI f
+    _ <- asum $ map asciiCI f
     skipMany tabOrSpace
     _ <- char ':'
     skipMany tabOrSpace
     p' <- p $ i' + 1
     skipToNextLine
     pure p'
-
-extractPath :: Indent -> [Path] -> Parser [Path]
-extractPath i ps =
-  (field i "hs-source-dirs" parseList >>= (\p -> extractPath i $ ps <> p))
-    <|> (skipBlockLine i >> extractPath i ps)
-    <|> (comment >> extractPath i ps)
-    <|> pure ps
 
 -- | Skip at least n spaces
 indent :: Indent -> Parser Int
@@ -222,4 +130,37 @@ indent i = do
   if c >= i then pure c else fail "insufficient indent"
 
 extractPkgs :: Parser [T.Text]
-extractPkgs = join . catMaybes <$> many' (Just <$> field 0 "packages" parseList <|> (skipToNextLine >> pure Nothing))
+extractPkgs = join . catMaybes <$> many' (Just <$> field 0 ["packages"] parseList <|> (skipToNextLine >> pure Nothing))
+
+parsePackage' :: T.Text -> Either String Package
+parsePackage' t = do
+  let bytes = encodeUtf8 t
+  case runParseResult (parseGenericPackageDescription bytes) of
+    (_warnings, Left err) ->
+        error $ "Cannot parse Cabal file: " <> show err
+    (_warnings, Right res) -> do
+      let pkg = flattenPackageDescription res
+      Right $ extractPackage pkg
+
+extractPackage :: PackageDescription -> Package
+extractPackage PackageDescription{..} = Package n cc where
+  n = T.pack . unPackageName $ pkgName package
+
+  cc = concat $
+    [mkComp Test (unqName $ testName t) (testBuildInfo t) (testModules t) | t <- testSuites] ++
+    [mkComp Bench (unqName $ benchmarkName b) (benchmarkBuildInfo b) (benchmarkModules b) | b <- benchmarks] ++
+    [mkComp Exe (unqName $ exeName e) (buildInfo e) (exeModules e) | e <- executables] ++
+    [mkComp Lib (libName' l) (libBuildInfo l) (explicitLibModules l) | l <- maybeToList library ++ subLibraries ] ++
+    [mkComp Lib (unqName $ foreignLibName f) (foreignLibBuildInfo f) (foreignLibModules f) | f <- foreignLibs]
+
+  mkComp :: CompType -> T.Text -> BuildInfo -> [ModuleName] -> [Component]
+  mkComp typ name bi mods =
+    [Comp typ name (T.pack $ srcDir </> m)
+    | m <- map toFilePath mods
+    , srcDir <- map getSymbolicPath $ hsSourceDirs bi
+    ]
+
+  unqName = T.pack . unUnqualComponentName
+  libName' x = case libName x of
+    LMainLibName  -> ""
+    LSubLibName u -> unqName u
