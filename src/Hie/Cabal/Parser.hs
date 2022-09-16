@@ -15,7 +15,8 @@ import           Control.Monad
 import           Data.Attoparsec.Text
 import           Data.Char
 import           Data.Foldable                                 (asum)
-import           Data.Maybe                                    (maybeToList, catMaybes)
+import           Data.Maybe                                    (catMaybes,
+                                                                maybeToList)
 import           Data.Text                                     (Text)
 import qualified Data.Text                                     as T
 import           Data.Text.Encoding                            (encodeUtf8)
@@ -23,15 +24,17 @@ import           Distribution.ModuleName                       (ModuleName,
                                                                 toFilePath)
 import           Distribution.Package                          (pkgName,
                                                                 unPackageName)
-import           Distribution.PackageDescription               (Benchmark (benchmarkBuildInfo, benchmarkName, benchmarkInterface),
+import           Distribution.PackageDescription               (Benchmark (benchmarkBuildInfo, benchmarkInterface, benchmarkName),
+                                                                BenchmarkInterface (BenchmarkExeV10),
                                                                 Executable (buildInfo, exeName, modulePath),
                                                                 ForeignLib (foreignLibBuildInfo, foreignLibName),
                                                                 Library (libBuildInfo, libName),
                                                                 LibraryName (..),
+                                                                TestSuiteInterface (TestSuiteExeV10),
                                                                 benchmarkModules,
                                                                 exeModules,
                                                                 explicitLibModules,
-                                                                foreignLibModules, TestSuiteInterface (TestSuiteExeV10), BenchmarkInterface (BenchmarkExeV10))
+                                                                foreignLibModules)
 import           Distribution.PackageDescription.Configuration
 import           Distribution.PackageDescription.Parsec
 import           Distribution.Types.BuildInfo
@@ -39,9 +42,9 @@ import           Distribution.Types.PackageDescription
 import           Distribution.Types.TestSuite
 import           Distribution.Types.UnqualComponentName
 import           Distribution.Utils.Path                       (getSymbolicPath)
-import           System.FilePath                               ((</>), (<.>))
-import GHC.IO (unsafePerformIO)
-import System.Directory (doesFileExist)
+import           GHC.IO                                        (unsafePerformIO)
+import           System.Directory                              (doesFileExist)
+import           System.FilePath                               ((<.>), (</>))
 
 
 type Name = Text
@@ -172,7 +175,7 @@ extractPackage PackageDescription{..} = Package n cc where
 benchmarkExePath :: Benchmark -> [FilePath]
 benchmarkExePath b = case benchmarkInterface b of
   BenchmarkExeV10 _ f -> [f]
-  _ -> []
+  _                   -> []
 
 toFilePath' :: ModuleName -> [FilePath]
 toFilePath' mod = [ toFilePath mod <.> ext | ext <- ["hs", "lhs"]]
@@ -180,4 +183,4 @@ toFilePath' mod = [ toFilePath mod <.> ext | ext <- ["hs", "lhs"]]
 testExePath :: TestSuite -> [FilePath]
 testExePath t = case testInterface t of
     TestSuiteExeV10 _ fp -> [fp]
-    _ -> []
+    _                    -> []
