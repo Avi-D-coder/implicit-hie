@@ -23,15 +23,15 @@ import           Distribution.ModuleName                       (ModuleName,
                                                                 toFilePath)
 import           Distribution.Package                          (pkgName,
                                                                 unPackageName)
-import           Distribution.PackageDescription               (Benchmark (benchmarkBuildInfo, benchmarkName),
-                                                                Executable (buildInfo, exeName),
+import           Distribution.PackageDescription               (Benchmark (benchmarkBuildInfo, benchmarkName, benchmarkInterface),
+                                                                Executable (buildInfo, exeName, modulePath),
                                                                 ForeignLib (foreignLibBuildInfo, foreignLibName),
                                                                 Library (libBuildInfo, libName),
                                                                 LibraryName (..),
                                                                 benchmarkModules,
                                                                 exeModules,
                                                                 explicitLibModules,
-                                                                foreignLibModules)
+                                                                foreignLibModules, TestSuiteInterface (TestSuiteExeV10), BenchmarkInterface (BenchmarkExeV10))
 import           Distribution.PackageDescription.Configuration
 import           Distribution.PackageDescription.Parsec
 import           Distribution.Types.BuildInfo
@@ -39,7 +39,9 @@ import           Distribution.Types.PackageDescription
 import           Distribution.Types.TestSuite
 import           Distribution.Types.UnqualComponentName
 import           Distribution.Utils.Path                       (getSymbolicPath)
-import           System.FilePath                               ((</>))
+import           System.FilePath                               ((</>), (<.>))
+import GHC.IO (unsafePerformIO)
+import System.Directory (doesFileExist)
 
 
 type Name = Text
@@ -147,20 +149,35 @@ extractPackage PackageDescription{..} = Package n cc where
   n = T.pack . unPackageName $ pkgName package
 
   cc = concat $
-    [mkComp Test (unqName $ testName t) (testBuildInfo t) (testModules t) | t <- testSuites] ++
-    [mkComp Bench (unqName $ benchmarkName b) (benchmarkBuildInfo b) (benchmarkModules b) | b <- benchmarks] ++
-    [mkComp Exe (unqName $ exeName e) (buildInfo e) (exeModules e) | e <- executables] ++
-    [mkComp Lib (libName' l) (libBuildInfo l) (explicitLibModules l) | l <- maybeToList library ++ subLibraries ] ++
-    [mkComp Lib (unqName $ foreignLibName f) (foreignLibBuildInfo f) (foreignLibModules f) | f <- foreignLibs]
+    [mkComp Test (unqName $ testName t) (testBuildInfo t) (testExePath t) (testModules t) | t <- testSuites] ++
+    [mkComp Bench (unqName $ benchmarkName b) (benchmarkBuildInfo b) (benchmarkExePath b) (benchmarkModules b) | b <- benchmarks] ++
+    [mkComp Exe (unqName $ exeName e) (buildInfo e) [modulePath e] (exeModules e) | e <- executables] ++
+    [mkComp Lib (libName' l) (libBuildInfo l) [] (explicitLibModules l) | l <- maybeToList library ++ subLibraries ] ++
+    [mkComp Lib (unqName $ foreignLibName f) (foreignLibBuildInfo f) [] (foreignLibModules f) | f <- foreignLibs]
 
-  mkComp :: CompType -> T.Text -> BuildInfo -> [ModuleName] -> [Component]
-  mkComp typ name bi mods =
-    [Comp typ name (T.pack $ srcDir </> m)
-    | m <- map toFilePath mods
+  mkComp :: CompType -> T.Text -> BuildInfo -> [FilePath] -> [ModuleName] -> [Component]
+  mkComp typ name bi fps mods =
+    [Comp typ name (T.pack fp)
+    | fp0 <- fps <> concatMap toFilePath' mods
     , srcDir <- map getSymbolicPath $ hsSourceDirs bi
+    , let fp = srcDir </> fp0
+    , unsafePerformIO $ doesFileExist fp
     ]
 
   unqName = T.pack . unUnqualComponentName
   libName' x = case libName x of
     LMainLibName  -> ""
     LSubLibName u -> unqName u
+
+benchmarkExePath :: Benchmark -> [FilePath]
+benchmarkExePath b = case benchmarkInterface b of
+  BenchmarkExeV10 _ f -> [f]
+  _ -> []
+
+toFilePath' :: ModuleName -> [FilePath]
+toFilePath' mod = [ toFilePath mod <.> ext | ext <- ["hs", "lhs"]]
+
+testExePath :: TestSuite -> [FilePath]
+testExePath t = case testInterface t of
+    TestSuiteExeV10 _ fp -> [fp]
+    _ -> []
