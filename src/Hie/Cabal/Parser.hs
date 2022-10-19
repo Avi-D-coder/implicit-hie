@@ -1,51 +1,59 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE RecordWildCards   #-}
+{-# LANGUAGE RecordWildCards #-}
 
 module Hie.Cabal.Parser
-( Package(..)
-, Component(..)
-, CompType(..)
-, Name
-, extractPkgs
-, parsePackage'
-) where
+  ( Package (..),
+    Component (..),
+    CompType (..),
+    Name,
+    extractPkgs,
+    parsePackage',
+  )
+where
 
-import           Control.Applicative
-import           Control.Monad
-import           Data.Attoparsec.Text
-import           Data.Char
-import           Data.Foldable                                 (asum)
-import           Data.Maybe                                    (catMaybes,
-                                                                maybeToList)
-import           Data.Text                                     (Text)
-import qualified Data.Text                                     as T
-import           Data.Text.Encoding                            (encodeUtf8)
-import           Distribution.ModuleName                       (ModuleName,
-                                                                toFilePath)
-import           Distribution.Package                          (pkgName,
-                                                                unPackageName)
-import           Distribution.PackageDescription               (Benchmark (benchmarkBuildInfo, benchmarkInterface, benchmarkName),
-                                                                BenchmarkInterface (BenchmarkExeV10),
-                                                                Executable (buildInfo, exeName, modulePath),
-                                                                ForeignLib (foreignLibBuildInfo, foreignLibName),
-                                                                Library (libBuildInfo, libName),
-                                                                LibraryName (..),
-                                                                TestSuiteInterface (TestSuiteExeV10),
-                                                                benchmarkModules,
-                                                                exeModules,
-                                                                explicitLibModules,
-                                                                foreignLibModules)
-import           Distribution.PackageDescription.Configuration
-import           Distribution.PackageDescription.Parsec
-import           Distribution.Types.BuildInfo
-import           Distribution.Types.PackageDescription
-import           Distribution.Types.TestSuite
-import           Distribution.Types.UnqualComponentName
-import           Distribution.Utils.Path                       (getSymbolicPath)
-import           GHC.IO                                        (unsafePerformIO)
-import           System.Directory                              (doesFileExist)
-import           System.FilePath                               ((<.>), (</>))
-
+import Control.Applicative
+import Control.Monad
+import Data.Attoparsec.Text
+import Data.Char
+import Data.Foldable (asum)
+import Data.Maybe
+  ( catMaybes,
+    maybeToList,
+  )
+import Data.Text (Text)
+import qualified Data.Text as T
+import Data.Text.Encoding (encodeUtf8)
+import Distribution.ModuleName
+  ( ModuleName,
+    toFilePath,
+  )
+import Distribution.Package
+  ( pkgName,
+    unPackageName,
+  )
+import Distribution.PackageDescription
+  ( Benchmark (benchmarkBuildInfo, benchmarkInterface, benchmarkName),
+    BenchmarkInterface (BenchmarkExeV10),
+    Executable (buildInfo, exeName, modulePath),
+    ForeignLib (foreignLibBuildInfo, foreignLibName),
+    Library (libBuildInfo, libName),
+    LibraryName (..),
+    TestSuiteInterface (TestSuiteExeV10),
+    benchmarkModules,
+    exeModules,
+    explicitLibModules,
+    foreignLibModules,
+  )
+import Distribution.PackageDescription.Configuration
+import Distribution.PackageDescription.Parsec
+import Distribution.Types.BuildInfo
+import Distribution.Types.PackageDescription
+import Distribution.Types.TestSuite
+import Distribution.Types.UnqualComponentName
+import Distribution.Utils.Path (getSymbolicPath)
+import GHC.IO (unsafePerformIO)
+import System.Directory (doesFileExist)
+import System.FilePath ((<.>), (</>))
 
 type Name = Text
 
@@ -142,45 +150,47 @@ parsePackage' t = do
   let bytes = encodeUtf8 t
   case runParseResult (parseGenericPackageDescription bytes) of
     (_warnings, Left err) ->
-        error $ "Cannot parse Cabal file: " <> show err
+      error $ "Cannot parse Cabal file: " <> show err
     (_warnings, Right res) -> do
       let pkg = flattenPackageDescription res
       Right $ extractPackage pkg
 
 extractPackage :: PackageDescription -> Package
-extractPackage PackageDescription{..} = Package n cc where
-  n = T.pack . unPackageName $ pkgName package
+extractPackage PackageDescription {..} = Package n cc
+  where
+    n = T.pack . unPackageName $ pkgName package
 
-  cc = concat $
-    [mkComp Test (unqName $ testName t) (testBuildInfo t) (testExePath t) (testModules t) | t <- testSuites] ++
-    [mkComp Bench (unqName $ benchmarkName b) (benchmarkBuildInfo b) (benchmarkExePath b) (benchmarkModules b) | b <- benchmarks] ++
-    [mkComp Exe (unqName $ exeName e) (buildInfo e) [modulePath e] (exeModules e) | e <- executables] ++
-    [mkComp Lib (libName' l) (libBuildInfo l) [] (explicitLibModules l) | l <- maybeToList library ++ subLibraries ] ++
-    [mkComp Lib (unqName $ foreignLibName f) (foreignLibBuildInfo f) [] (foreignLibModules f) | f <- foreignLibs]
+    cc =
+      concat $
+        [mkComp Test (unqName $ testName t) (testBuildInfo t) (testExePath t) (testModules t) | t <- testSuites]
+          ++ [mkComp Bench (unqName $ benchmarkName b) (benchmarkBuildInfo b) (benchmarkExePath b) (benchmarkModules b) | b <- benchmarks]
+          ++ [mkComp Exe (unqName $ exeName e) (buildInfo e) [modulePath e] (exeModules e) | e <- executables]
+          ++ [mkComp Lib (libName' l) (libBuildInfo l) [] (explicitLibModules l) | l <- maybeToList library ++ subLibraries]
+          ++ [mkComp Lib (unqName $ foreignLibName f) (foreignLibBuildInfo f) [] (foreignLibModules f) | f <- foreignLibs]
 
-  mkComp :: CompType -> T.Text -> BuildInfo -> [FilePath] -> [ModuleName] -> [Component]
-  mkComp typ name bi fps mods =
-    [Comp typ name (T.pack fp)
-    | fp0 <- fps <> concatMap toFilePath' mods
-    , srcDir <- map getSymbolicPath $ hsSourceDirs bi
-    , let fp = srcDir </> fp0
-    , unsafePerformIO $ doesFileExist fp
-    ]
+    mkComp :: CompType -> T.Text -> BuildInfo -> [FilePath] -> [ModuleName] -> [Component]
+    mkComp typ name bi fps mods =
+      [ Comp typ name (T.pack fp)
+        | fp0 <- fps <> concatMap toFilePath' mods,
+          srcDir <- map getSymbolicPath $ hsSourceDirs bi,
+          let fp = srcDir </> fp0,
+          unsafePerformIO $ doesFileExist fp
+      ]
 
-  unqName = T.pack . unUnqualComponentName
-  libName' x = case libName x of
-    LMainLibName  -> ""
-    LSubLibName u -> unqName u
+    unqName = T.pack . unUnqualComponentName
+    libName' x = case libName x of
+      LMainLibName -> ""
+      LSubLibName u -> unqName u
 
 benchmarkExePath :: Benchmark -> [FilePath]
 benchmarkExePath b = case benchmarkInterface b of
   BenchmarkExeV10 _ f -> [f]
-  _                   -> []
+  _ -> []
 
 toFilePath' :: ModuleName -> [FilePath]
-toFilePath' mod = [ toFilePath mod <.> ext | ext <- ["hs", "lhs"]]
+toFilePath' mod = [toFilePath mod <.> ext | ext <- ["hs", "lhs"]]
 
 testExePath :: TestSuite -> [FilePath]
 testExePath t = case testInterface t of
-    TestSuiteExeV10 _ fp -> [fp]
-    _                    -> []
+  TestSuiteExeV10 _ fp -> [fp]
+  _ -> []
