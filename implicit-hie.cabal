@@ -46,15 +46,16 @@ library
   hs-source-dirs:   src
   ghc-options:
     -Wall -Wincomplete-record-updates -Wincomplete-uni-patterns
-    -fno-warn-unused-imports -fno-warn-unused-binds
     -fno-warn-name-shadowing -fwarn-redundant-constraints
 
   build-depends:
       attoparsec    >=0.13
     , base          >=4.7  && <5
+    , bytestring
     , directory     >=1.3
     , filepath      >=1.4
     , filepattern   >=0.1
+    , Cabal-syntax  >=3.8
     , text          >=1.2
     , transformers  >=0.5
     , yaml          >=0.5
@@ -88,7 +89,7 @@ executable gen-hie
     , yaml
 
   default-language: Haskell2010
-  
+
   if !flag(executable)
     buildable: False
 
