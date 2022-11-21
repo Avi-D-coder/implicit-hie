@@ -1,3 +1,4 @@
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
@@ -6,6 +7,9 @@ module Hie.Cabal.Parser
     Component (..),
     CompType (..),
     Name,
+    CradleType (..),
+    CradlePer (..),
+    cradleTypeName,
     extractPkgs,
     parsePackage',
   )
@@ -70,6 +74,17 @@ data CompType = Lib | Exe | Test | Bench
 data Component
   = Comp CompType Name Path
   deriving (Show, Eq, Ord)
+
+data CradleType = StackCradle | CabalCradle
+  deriving (Eq, Show)
+
+cradleTypeName :: CradleType -> String
+cradleTypeName = \case
+  StackCradle -> "stack"
+  CabalCradle -> "cabal"
+
+data CradlePer = PerSrcDir | PerModule
+  deriving (Eq, Show)
 
 parseQuoted :: Parser Text
 parseQuoted = do

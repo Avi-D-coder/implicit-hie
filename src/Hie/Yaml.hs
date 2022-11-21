@@ -1,3 +1,4 @@
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 module Hie.Yaml
@@ -6,17 +7,18 @@ module Hie.Yaml
     fmtPkgs,
     cabalComponent,
     stackComponent,
+    component,
   )
 where
 
 import qualified Data.Text as T
 import Hie.Cabal.Parser
 
-hieYaml :: String -> String -> String
-hieYaml sOrC pkgs =
+hieYaml :: CradleType -> String -> String
+hieYaml ct pkgs =
   "cradle:\n"
     <> indent'
-      (sOrC <> ":\n" <> indent' pkgs)
+      (cradleTypeName ct <> ":\n" <> indent' pkgs)
 
 indent' :: String -> String
 indent' =
@@ -27,6 +29,11 @@ indent' =
           _ -> "  " <> l
       )
     . lines
+
+component :: CradleType -> Name -> Component -> (FilePath, String)
+component = \case
+  CabalCradle -> cabalComponent
+  StackCradle -> stackComponent
 
 cabalComponent :: Name -> Component -> (FilePath, String)
 cabalComponent n (Comp Lib "" p) = (T.unpack p, T.unpack $ "lib:" <> n)
@@ -54,11 +61,10 @@ fmtComponent (p, c) =
 dropLast :: [a] -> [a]
 dropLast l = take (length l - 1) l
 
-fmtPkgs :: String -> [Package] -> String
-fmtPkgs sOrC pkgs = dropLast $ unlines l
+fmtPkgs :: CradleType -> [Package] -> String
+fmtPkgs ct pkgs = dropLast $ unlines l
   where
-    comp = if sOrC == "cabal" then cabalComponent else stackComponent
-    f (Package n cs) = map ((<> "\n") . fmtComponent . comp n) cs
+    f (Package n cs) = map ((<> "\n") . fmtComponent . component ct n) cs
     l = concatMap f pkgs
 
 dQuote :: String -> String

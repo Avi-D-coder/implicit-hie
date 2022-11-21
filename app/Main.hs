@@ -5,6 +5,7 @@ module Main where
 import Control.Monad
 import Control.Monad.Trans.Maybe
 import Data.Maybe
+import Hie.Cabal.Parser
 import Hie.Locate
 import Hie.Yaml
 import System.Directory
@@ -16,27 +17,29 @@ import System.IO
 main :: IO ()
 main = do
   pwd <- getCurrentDirectory
-  name <- resolveName pwd
-  cfs <- runMaybeT $ case name of
-    "cabal" -> cabalPkgs pwd
-    _ -> stackYamlPkgs pwd
+  ct <- resolveCradleType pwd
+  cfs <- runMaybeT $ case ct of
+    CabalCradle -> cabalPkgs pwd
+    StackCradle -> stackYamlPkgs pwd
   when (null cfs) $
     die $
-      "Used " <> name
+      "Used "
+        <> cradleTypeName ct
         <> "\n No .cabal files found under"
         <> pwd
         <> "\n You may need to run stack build."
   pkgs <- catMaybes <$> mapM (nestedPkg pwd) (concat cfs)
-  putStr <$> hieYaml name $ fmtPkgs name pkgs
+  putStr <$> hieYaml ct $ fmtPkgs ct pkgs
 
-resolveName :: FilePath -> IO String
-resolveName pwd = do
+resolveCradleType :: FilePath -> IO CradleType
+resolveCradleType pwd = do
   args <- getArgs
   files <- listDirectory pwd
   when ("--help" `elem` args || "-h" `elem` args) $ do
     progName <- getProgName
     hPutStrLn stderr $
-      "Usage: " <> progName
+      "Usage: "
+        <> progName
         <> " [ --cabal | --stack ]\n\n\
            \If neither argument is given then "
         <> progName
@@ -44,13 +47,13 @@ resolveName pwd = do
            \looking for dist-newstyle, .stack-work, cabal.project and stack.yaml in that order."
     exitSuccess
   let fileNames = map takeFileName files
-      name =
+      ct =
         if
-            | "--cabal" `elem` args -> "cabal"
-            | "--stack" `elem` args -> "stack"
-            | "dist-newstyle" `elem` fileNames -> "cabal"
-            | ".stack-work" `elem` fileNames -> "stack"
-            | "cabal.project" `elem` fileNames -> "cabal"
-            | "stack.yaml" `elem` fileNames -> "stack"
-            | otherwise -> "cabal"
-  return name
+            | "--cabal" `elem` args -> CabalCradle
+            | "--stack" `elem` args -> StackCradle
+            | "dist-newstyle" `elem` fileNames -> CabalCradle
+            | ".stack-work" `elem` fileNames -> StackCradle
+            | "cabal.project" `elem` fileNames -> CabalCradle
+            | "stack.yaml" `elem` fileNames -> StackCradle
+            | otherwise -> CabalCradle
+  return ct
