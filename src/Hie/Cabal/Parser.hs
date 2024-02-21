@@ -110,6 +110,10 @@ parseList i = many (nl <|> sl)
 skipToNextLine :: Parser ()
 skipToNextLine = skipWhile (not . isEndOfLine) >> endOfLine
 
+-- This function may consume no inputs; so 'many skipToNextLineOrEOI' may go into infinite loop.
+skipToNextLineOrEOI :: Parser ()
+skipToNextLineOrEOI = skipWhile (not . isEndOfLine) >> (endOfInput <|> endOfLine)
+
 comment :: Parser ()
 comment = skipMany tabOrSpace >> "--" >> skipToNextLine
 
@@ -133,7 +137,7 @@ field i f p =
     _ <- char ':'
     skipMany tabOrSpace
     p' <- p $ i' + 1
-    skipToNextLine
+    skipToNextLineOrEOI
     pure p'
 
 -- | Skip at least n spaces
